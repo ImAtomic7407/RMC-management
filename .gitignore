@@ -1,0 +1,78 @@
+# Secrets & Credentials (NEVER commit these)
+.env
+.env.*
+secrets.json
+credentials.json
+**/google-services.json
+**/GoogleService-Info.plist
+*.jks
+*.keystore
+*.db
+*.sqlite*
+*.logcat
+
+# Node & npm
+node_modules/
+package-lock.json
+yarn.lock
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+
+# Build artifacts
+dist/
+build/
+.gradle/
+*.apk
+*.aab
+*.ipa
+.build/
+*.xcarchive
+.expo/
+.expo-shared/
+output/
+
+# Android
+android/.gradle
+android/.idea
+android/local.properties
+android/app/build
+android/.DS_Store
+
+# iOS
+ios/.build
+ios/Pods
+ios/Podfile.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.eslintcache
+.prettierignore
+
+# Expo
+.env.local
+.env.*.local
+.idea/
+.gradle/
+local.properties
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+.env.production
+.env.production.local
+
+# Large app build artifacts (can be regenerated)
+Examination/examination-backend/uploads/releases/
+Examination/examination-backend/uploads/apk/
+Examination/examination-backend/uploads/*.apk

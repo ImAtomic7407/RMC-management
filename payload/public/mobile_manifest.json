@@ -1,0 +1,22 @@
+{
+  "app": {
+    "version": "1.0.17",
+    "min_version": "1.0.17",
+    "update_mode": "apk",
+    "force_update": true,
+    "apk_url": "https://pub-45176c50a4064b7ca3a691ba71c61e97.r2.dev/rmc-mobile.apk?v=1.0.17-20260519",
+    "config_version": 12,
+    "release_notes": [
+      "Version 1.0.17 preserves batch/session guardian phone data in roster merges.",
+      "Update notifications are deduplicated so devices get one alert per release.",
+      "The APK download link now points to the latest build.",
+      "Attendance scanning stays lightweight with the compact photo/name/UID view.",
+      "Staff card generation remains available in the mobile app."
+    ],
+    "config": {
+      "notification_preview_limit": 4,
+      "home_feed_limit": 4,
+      "welcome_hero_offset_y": 60
+    }
+  }
+}

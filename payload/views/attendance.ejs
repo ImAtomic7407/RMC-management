@@ -1,0 +1,79 @@
+<!DOCTYPE html> <!-- Declares the document type as HTML5 for system-wide compatibility. -->
+<html lang="en"> <!-- Sets the language to English for the staff-only scanning interface. -->
+<head> <!-- Metadata and static resource container for the scanning portal. -->
+    <meta charset="UTF-8"> <!-- Standard character encoding to prevent text corruption in student names. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures scanning guidelines and buttons are touch-friendly on mobile cameras. -->
+    <title>RMC | Mark Attendance</title> <!-- Defines the browser tab title for the staff attendance module. -->
+    <link rel="stylesheet" href="/css/index.css"> <!-- Loads the core Alpha Aura dynamic background and glass tokens. -->
+    <link rel="stylesheet" href="/css/attendance.css"> <!-- Loads specialized scanner-overlay and layout CSS for attendance marking. -->
+    <link rel="stylesheet" href="/css/id-card.css"> <!-- Loads the 3D flippable card animation engine for immediate student verification. -->
+    <!-- QR Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode"></script> <!-- Imports the high-performance camera-to-QR decoding engine. -->
+</head>
+<body class="dashboard-layout"> <!-- Applies the dashboard-themed layout wrapper for the scanning portal. -->
+    <div class="vibrant-bg"> <!-- The 5-blob kinetic mesh container, maintaining design unity with the guest enrollment portal. -->
+        <div class="blob blob-1"></div> <!-- Multi-colored animated blob (Amber) for background depth. -->
+        <div class="blob blob-2"></div> <!-- Multi-colored animated blob (Cyan) for background depth. -->
+        <div class="blob blob-3"></div> <!-- Multi-colored animated blob (Deep Blue) for background depth. -->
+        <div class="blob blob-4"></div> <!-- Multi-colored animated blob (Cyan-Vibrant) for background depth. -->
+        <div class="blob blob-5"></div> <!-- Multi-colored animated blob (Blue-Soft) for background depth. -->
+    </div>
+    <main class="app-container"> <!-- Primary centered flex-container for the attendance app logic. -->
+        <header class="app-header"> <!-- Top-bar container for system branding and primary navigation. -->
+            <div class="brand"> <!-- Institutional branding section. -->
+                <span class="glitch-text" data-text="RMC">RMC</span> <!-- Stylized RMC logo with premium glitch-hover effect. -->
+                <p class="slogan">SECURE ATTENDANCE SYSTEM</p> <!-- Mission statement for the attendance module. -->
+            </div>
+            <div class="header-actions"> <!-- Navigation bar for staff to exit scanning mode. -->
+                <a href="/dashboard" class="btn-nav">DASHBOARD</a> <!-- Link to return to the master administrative control center. -->
+            </div>
+        </header>
+        <section class="scanner-section glass-panel"> <!-- Major UI section housing the live camera feed and scan guidelines. -->
+            <div class="section-title"> <!-- Dynamic status indicator for staff awareness. -->
+                <span class="status-dot"></span> <!-- Visual 'Pulse' indicating the scanner is actively polling the camera. -->
+                LIVE SCANNER ACTIVE <!-- Textual status of the HTML5-QR engine. -->
+            </div>
+            <div class="scanner-wrapper"> <!-- Relative container for the video feed and the futuristic scan overlay. -->
+                <div id="qr-reader"></div> <!-- The target element where the html5-qrcode library injects the live video. -->
+                <div class="scanner-overlay"> <!-- Futuristic UI layer with bracket corners to guide student QR positioning. -->
+                    <div class="scan-corner top-left"></div> <!-- Visual scanning bracket (Upper Left). -->
+                    <div class="scan-corner top-right"></div> <!-- Visual scanning bracket (Upper Right). -->
+                    <div class="scan-corner bottom-left"></div> <!-- Visual scanning bracket (Lower Left). -->
+                    <div class="scan-corner bottom-right"></div> <!-- Visual scanning bracket (Lower Right). -->
+                    <div class="scan-anim-line"></div> <!-- Animated red/cyan baseline that 'scans' up and down for visual feedback. -->
+                </div>
+            </div>
+            <p class="scanner-hint">POINT CAMERA AT THE STUDENT'S ID QR CODE</p> <!-- Instructional guidance for staff or high-speed self-scanning. -->
+            <button id="btn-manual-start" class="btn-ghost hidden">FALLBACK: START CAMERA MANUALLY</button> <!-- Invisible recovery button for browser-level camera permission resets. -->
+        </section>
+        <!-- INLINE RESULT AREA (3D FLIPPABLE) -->
+        <section id="attendance-result" class="inline-preview hidden glass-panel"> <!-- Hidden result card that slides up after a successful DB verification. -->
+            <div class="result-header"> <!-- Feedback section confirming the student's status. -->
+                <div class="success-icon">✓</div> <!-- High-contrast green checkmark for cognitive confirmation. -->
+                <h3>STUDENT VERIFIED (3D)</h3> <!-- Status text confirming the student exists in the database. -->
+                <span id="scan-time" class="status-badge">JUST NOW</span> <!-- Timestamp indicating precisely when the scan was logged. -->
+            </div>
+            <div class="card-display-box"> <!-- Viewport for the 3D identity verification mockup. -->
+                <!-- 3D Flippable Card UI -->
+                <div class="id-card-scene" id="preview-scene"> <!-- Master 3D scene with perspective: 1000px. -->
+                    <div class="id-card-inner" id="flippable-card"> <!-- The inner card housing that transforms along the Y-axis. -->
+                        <!-- FRONT SIDE -->
+                        <div class="id-card-front" id="ui-card-front"> <!-- Target for JS injection of student photo and primary profile data. -->
+                            <!-- Populated by JS -->
+                        </div>
+                        <!-- BACK SIDE -->
+                        <div class="id-card-back" id="ui-card-back"> <!-- Target for JS injection of emergency contacts and address data. -->
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="inline-actions"> <!-- Bottom controls for the verification display. -->
+                <button class="btn-action-small" id="btn-flip-card">🔄 FLIP CARD</button> <!-- Button to toggle the 3D card's front/back faces for data audit. -->
+                <button class="btn-primary" id="btn-reset-scan">SCAN NEXT STUDENT</button> <!-- Primary action to clear the result and restart high-speed scanning. -->
+            </div>
+        </section>
+    </main>
+    <script src="/js/attendance.js"></script> <!-- Links to the core scanning logic, verification API bridge, and 3D UI injector. -->
+</body>
+</html>

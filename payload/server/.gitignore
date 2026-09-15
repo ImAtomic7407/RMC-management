@@ -1,0 +1,13 @@
+# RMC Web App - Ignore sensitivity/local data
+node_modules/
+*.db
+*.db-journal
+*.log
+uploads/
+qrcodes/
+staff_qrcodes/
+materials/
+.env
+# Ignore the sqlite cache for sessions especially
+rmc_sessions.db
+rmc_pro_database.db

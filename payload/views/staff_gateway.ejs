@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMC | Staff Dashboard</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/attendance.css"> <!-- Reuses scanner UI tokens -->
+    <link rel="stylesheet" href="/css/id-card.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="/js/modules/zen_pillars.js"></script>
+</head>
+<body class="dashboard-layout">
+    <div class="vibrant-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+        <div class="blob blob-5"></div>
+    </div>
+    
+    <%- include('partials/sidebar', { user, activePage: 'staff_gateway', zenPortal: true }) %>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div class="h-info">
+                <h1 class="glow-text">Staff Dashboard</h1>
+                <p>Manage attendance and verify student QR cards.</p>
+            </div>
+            <!-- REMOVED STATS FROM HEADER TO CLEAN UP -->
+        </header>
+
+        <!-- ZEN PILLARS NAVIGATION -->
+        <div id="zen-pillars-nav"></div>
+
+        <div id="zen-sections">
+            <!-- SECTION 1: VERIFICATION (DEFAULT) -->
+            <div id="section-verification" class="zen-section hidden">
+                <section class="session-controls glass-container mb-40">
+                    <div class="scanner-sync-shell">
+                        <div class="scanner-sync-copy">
+                            <span class="scanner-sync-tag">Live Sync</span>
+                            <h3>Scanner follows the teacher session automatically</h3>
+                            <p>Teacher Console controls the batch and session lifecycle. This terminal only scans against the current live class.</p>
+                        </div>
+                        <div class="scanner-sync-meta">
+                            <div class="scanner-meta-card">
+                                <span class="meta-label">Active Batch</span>
+                                <strong id="selected-batch-label">Waiting</strong>
+                            </div>
+                            <div class="scanner-meta-card">
+                                <span class="meta-label">Session</span>
+                                <strong id="selected-session-label">Not started</strong>
+                            </div>
+                        </div>
+                        <div class="scanner-sync-actions">
+                            <button id="btn-close-live-session" type="button" class="btn-glass danger hidden">Close Session</button>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="dashboard-split" style="grid-template-columns: 1fr;">
+                    <section class="scanner-terminal">
+                        <div class="glass-container scanner-envelope">
+                            <div class="section-header">
+                                <h2>Verification Terminal</h2>
+                                <span id="session-status" class="session-badge">Idle - Start a session</span>
+                            </div>
+                            <div class="scanner-viewport" id="scanner-viewport">
+                                <!-- Same Scanner Viewport Logic -->
+                                <div class="scanner-offline-msg">
+                                    <div style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;">📡</div>
+                                    <div style="font-size: 0.9rem; letter-spacing: 1px;">Scanner is waiting</div>
+                                    <div style="font-size: 0.75rem; margin-top: 10px;">Start a class from Teacher Console to activate this terminal.</div>
+                                </div>
+                                <video id="qr-video" autoplay playsinline class="hidden"></video>
+                                <canvas id="qr-canvas" class="hidden"></canvas>
+                                <div id="scanner-hud" class="scanner-hud hidden">
+                                    <div class="tactical-hud">
+                                        <div class="hud-corner hud-tl"></div><div class="hud-corner hud-tr"></div>
+                                        <div class="hud-corner hud-bl"></div><div class="hud-corner hud-br"></div>
+                                        <div class="scanning-text"><span class="biometric-pulse"></span> Scanner active</div>
+                                    </div>
+                                    <div class="target-box"></div><div class="kinetic-pulse"></div>
+                                </div>
+                            </div>
+                            <div id="auth-result-card" class="glass-container result-card hidden">
+                                <div style="display:flex; gap: 15px; align-items: center;">
+                                    <img id="verified-photo" src="" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover;">
+                                    <div><p class="verified-label">Verified</p><h3 id="verified-name">Student Name</h3><p id="verified-uid">UID</p></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- SECTION 2: RECORDS -->
+            <div id="section-records" class="zen-section hidden">
+                <section class="management-dashboard">
+                    <div class="glass-container table-envelope">
+                        <div class="section-header">
+                            <h2>Live Student Roster</h2>
+                            <input type="text" id="db-search" class="input-glass" placeholder="Search by name or UID...">
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr><th>UID</th><th>NAME</th><th>STATUS</th><th class="host-only-col">ACTION</th></tr>
+                                </thead>
+                                <tbody id="student-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- SECTION 3: TOOLS (STAFF CREATION) -->
+            <div id="section-tools" class="zen-section hidden">
+                <% if (typeof publicStaffTools !== 'undefined' ? publicStaffTools : (user && user.role === 'host')) { %>
+                    <section class="glass-container">
+                        <div class="section-header">
+                            <h2>Create Staff ID Card</h2>
+                            <p>Generate digital credentials for new staff members.</p>
+                        </div>
+                        <form id="staff-card-form" class="notice-grid">
+                            <!-- FORM FIELDS -->
+                            <div class="input-group"><label>Full Name</label><input class="input-glass" name="full_name" required></div>
+                            <div class="input-group"><label>Username</label><input class="input-glass" name="username" required></div>
+                            <div class="input-group"><label>Password</label><input class="input-glass" name="password" required></div>
+                            <div class="input-group"><label>Role</label><select class="input-glass" name="role"><option value="teacher">Teacher</option><option value="staff">Staff</option></select></div>
+                            <div class="btn-group" style="grid-column: 1 / -1; justify-content:flex-start;">
+                                <button class="btn-neon" type="submit">Create Staff Card</button>
+                                <span id="staff-card-status" class="status-inline"></span>
+                            </div>
+                        </form>
+                        <div id="staff-card-preview" class="hidden mt-20" style="border:1px solid var(--glass-border); border-radius: 16px; padding: 14px; background: rgba(255,255,255,0.02);">
+                            <div style="display:flex; gap: 16px; align-items:center; flex-wrap:wrap;">
+                                <img id="staff-card-qr" src="" alt="Staff QR" style="width: 140px; height: 140px; border-radius: 10px; background:#fff; padding: 6px;">
+                                <div>
+                            <div id="staff-card-name" style="font-size: 1.05rem; color:var(--text-primary); font-weight:800;"></div>
+                                    <div id="staff-card-user" style="color: var(--text-secondary); margin-top: 4px;"></div>
+                                    <div id="staff-card-role" style="color: var(--text-secondary); margin-top: 2px;"></div>
+                                    <div id="staff-card-scan" style="font-family: monospace; font-size: 0.78rem; color: #93c5fd; margin-top: 8px;"></div>
+                                    <div style="margin-top: 10px; display:flex; gap: 10px; flex-wrap: wrap;">
+                                        <a id="staff-card-open-qr" class="btn-glass sm" href="#" target="_blank" rel="noopener" style="text-decoration:none;">Open QR</a>
+                                        <a id="staff-card-open-scan" class="btn-glass sm info" href="#" target="_blank" rel="noopener" style="text-decoration:none;">Open Scan URL</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                <% } %>
+                <section class="glass-container mt-40">
+                    <div class="section-header">
+                        <h2>Registration</h2>
+                        <p>Quick access to student enrollment.</p>
+                    </div>
+                    <button class="btn-glass" onclick="location.href='/register'">Open Enrollment Form</button>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- 3D Card Modal for Student Management -->
+    <div id="pro-card-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); z-index: 2000; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+        <div class="id-card-scene" style="margin-bottom: 30px;">
+            <div id="flippable-card" class="id-card-inner">
+                <div id="ui-card-front" class="id-card-front card-face"></div>
+                <div id="ui-card-back" class="id-card-back card-face"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 15px;">
+            <button class="btn-glass" onclick="document.getElementById('flippable-card').classList.toggle('is-flipped')">Flip Card</button>
+            <button class="btn-neon host-only-btn" id="btn-purge-record" style="background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #ef4444; box-shadow: none;">Delete Student</button>
+            <button class="btn-glass" onclick="document.getElementById('pro-card-modal').classList.add('hidden')">Close</button>
+        </div>
+    </div>
+
+    <script src="/js/staff_gateway.js"></script>
+    <script>
+        // Zen Pillars Initialization for Staff
+        document.addEventListener('DOMContentLoaded', () => {
+            new ZenPillars({
+                containerId: 'zen-pillars-nav',
+                sectionsContainerId: 'zen-sections',
+                tabs: [
+                    { id: 'verification', label: 'Scanner', icon: '🔍' },
+                    { id: 'records', label: 'Roster', icon: '📋' },
+                    { id: 'tools', label: 'Management', icon: '⚙️' }
+                ],
+                activeTabId: 'verification'
+            });
+        });
+    </script>
+    <style>
+        .content-header { text-align: center; margin-bottom: 30px; }
+        .glow-text { font-size: 2.5rem; }
+        
+        @media (min-width: 1025px) {
+            .main-content { max-width: 1200px; margin: 40px auto; padding: 0 40px; }
+        }
+        
+        .verified-label { color: #10b981; font-weight: 900; font-size: 0.78rem; letter-spacing: 0.6px; text-transform: uppercase; }
+        
+        .dashboard-split { display: grid; gap: 30px; }
+        .scanner-sync-shell { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
+        
+        @media (min-width: 900px) {
+            .dashboard-split { gap: 60px; }
+            .scanner-sync-shell { grid-template-columns: 1.2fr 0.9fr; align-items: center; }
+        }
+
+        .scanner-sync-tag { display: inline-flex; padding: 6px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.9px; text-transform: uppercase; background: rgba(59,130,246,0.12); color: #93c5fd; border: 1px solid rgba(59,130,246,0.2); }
+        .scanner-sync-copy h3 { margin-top: 12px; margin-bottom: 8px; color: var(--text-primary); }
+        
+        .scanner-sync-meta { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 600px) {
+            .scanner-sync-meta { grid-template-columns: 1fr 1fr; }
+        }
+        .scanner-sync-actions { display: flex; justify-content: flex-start; }
+        .scanner-sync-actions .btn-glass { width: auto; min-width: 180px; }
+
+        .scanner-meta-card { padding: 16px 18px; border-radius: 18px; background: rgba(15,23,42,0.4); border: 1px solid rgba(255,255,255,0.08); display: grid; gap: 6px; }
+        .meta-label { color: var(--text-secondary); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.8px; }
+        .scanner-meta-card strong { color: var(--text-primary); font-size: 1rem; }
+        .status-inline { align-self: center; font-size: 0.85rem; color: var(--text-secondary); }
+        @keyframes scanline { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+        .table-wrapper table tbody tr { background: rgba(255,255,255,0.02); transition: 0.2s; }
+        .table-wrapper table tbody tr:hover { background: rgba(59, 130, 246, 0.05); }
+        .table-wrapper table td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; color: var(--text-primary); }
+        .status-pill { padding: 5px 10px; border-radius: 12px; font-size: 0.76rem; font-weight: 800; border: 1px solid var(--glass-border); }
+        .status-pill.present { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
+        .status-pill.warning { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border-color: rgba(245, 158, 11, 0.28); }
+        .status-pill.absent { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+        .status-pill.idle { background: rgba(255,255,255,0.05); color: var(--text-secondary); }
+        @media (max-width: 1100px) { .dashboard-split { grid-template-columns: 1fr !important; gap: 28px !important; } }
+        @media (max-width: 700px) {
+            .h-stats { width: 100%; overflow-x: auto; }
+            .scanner-sync-shell { grid-template-columns: 1fr; }
+            .scanner-sync-meta { grid-template-columns: 1fr; }
+            .scanner-sync-actions .btn-glass { width: 100%; }
+        }
+        @media (max-width: 980px) {
+            .session-controls, .scanner-envelope, .table-envelope { padding: 16px !important; }
+            .section-header h2 { font-size: 1.05rem; }
+            #db-search { width: 100% !important; max-width: 100% !important; }
+            .section-header { gap: 10px; flex-wrap: wrap; }
+            .table-wrapper { overflow: auto; }
+            .table-wrapper table { min-width: 560px; }
+            #staff-card-form { grid-template-columns: 1fr 1fr !important; }
+        }
+        @media (max-width: 640px) {
+            #pro-card-modal .id-card-scene { width: 92vw; height: auto; }
+            #staff-card-form { grid-template-columns: 1fr !important; }
+            .scanner-meta-card { padding: 14px; }
+        }
+    </style>
+</body>
+</html>
+

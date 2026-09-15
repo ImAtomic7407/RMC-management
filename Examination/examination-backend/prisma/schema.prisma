@@ -1,0 +1,1150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  PENDING
+}
+
+enum ExamStatus {
+  DRAFT
+  SCHEDULED
+  LIVE
+  PUBLISHED
+  CLOSED
+  RESULT_RELEASED
+  ARCHIVED
+}
+
+enum ExamMode {
+  LIVE
+  PRACTICE
+}
+
+enum SolutionReleasePolicy {
+  AFTER_EXAM_END
+  AFTER_RESULT_RELEASE
+  NEVER
+  PRACTICE_UNLOCK_RULE
+}
+
+enum SectionCode {
+  PHYSICS
+  CHEMISTRY
+  MATHS
+}
+
+enum QuestionType {
+  MCQ
+  INTEGER
+}
+
+enum QuestionMediaPurpose {
+  QUESTION
+  SOLUTION
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  AUTO_SUBMITTED
+  EXPIRED
+  CANCELLED
+}
+
+enum LeaderboardScope {
+  EXAM
+  BATCH
+  OVERALL
+}
+
+enum AuditActorRole {
+  ADMIN
+  TEACHER
+  STUDENT
+  SYSTEM
+}
+
+enum QuestionSourceType {
+  TEXT
+  IMAGE
+  MIXED
+}
+
+enum QuestionPaperStatus {
+  DRAFT
+  ARCHIVED
+}
+
+enum AttemptContext {
+  OFFICIAL_EXAM
+  SELF_PRACTICE
+}
+
+enum ExamGateStatus {
+  WAITING_FOR_SCAN
+  VERIFIED
+  DENIED
+  CANCELLED
+  EXPIRED
+}
+
+enum DeviceBindStatus {
+  UNBOUND
+  BOUND
+  REPLACED
+  BLOCKED
+}
+
+enum PaperDownloadStatus {
+  NOT_STARTED
+  DOWNLOADING
+  READY
+  FAILED
+}
+
+enum ExamViolationType {
+  BACK_ATTEMPT
+  APP_BACKGROUND
+  APP_SWITCH
+  SCREEN_OFF
+  MULTI_WINDOW
+  OVERLAY_OR_ASSISTANT_TRIGGERED
+  SCREENSHOT_ATTEMPT
+  NETWORK_LOST
+  TIMER_TAMPER_ATTEMPT
+  LOW_VOLUME_WARNING
+}
+
+enum ExamViolationSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum SelfPracticeSolutionPolicy {
+  AFTER_SUBMIT
+  AFTER_CORRECT
+  AFTER_TWO_WRONG
+  NEVER
+}
+
+enum QuestionSelectionStrategy {
+  ALL
+  RANDOM_SUBSET
+  ROTATED_SUBSET
+}
+
+enum QuestionOrderStrategy {
+  ORIGINAL
+  SHUFFLED
+  ROTATED_SHUFFLED
+}
+
+enum AssignedPaperStatus {
+  GENERATED
+  DOWNLOADING
+  READY
+  FAILED
+  ARCHIVED
+}
+
+enum ReviewPackageLockStatus {
+  LOCKED
+  UNLOCKED
+  EXPIRED
+}
+
+model users {
+  id            Int          @id @default(autoincrement())
+  username      String       @unique
+  password_hash String
+  role          UserRole
+  status        UserStatus   @default(PENDING)
+  full_name     String?
+  phone         String?
+  last_login_at DateTime?
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+
+  student_profile student_profiles?
+  teacher_profile teacher_profiles?
+  exams_created   exams[]    @relation("exams_created_by")
+  exams_updated   exams[]    @relation("exams_updated_by")
+  exams_started   exams[]    @relation("exams_started_by")
+  questions_created questions[] @relation("questions_created_by")
+  questions_updated questions[] @relation("questions_updated_by")
+  media_uploaded  question_media[]
+  question_papers_created question_papers[] @relation("question_papers_created_by")
+  question_paper_versions_created question_paper_versions[] @relation("question_paper_versions_created_by")
+  paper_questions_created paper_questions[] @relation("paper_questions_created_by")
+  paper_question_media_uploaded paper_question_media[] @relation("paper_question_media_uploaded_by")
+  exam_assignments_created exam_assignments[]
+  exam_gate_sessions_verified exam_gate_sessions[] @relation("exam_gate_sessions_verified_by_teacher")
+  audit_logs      exam_audit_logs[] @relation("audit_actor")
+  identity_bridges identity_bridge[]
+
+  @@index([role, status])
+}
+
+model student_profiles {
+  id          Int      @id @default(autoincrement())
+  user_id     Int      @unique
+  student_uid String   @unique
+  batch_id    Int
+  class_name  String?
+  roll_no     String?
+  active      Boolean  @default(true)
+  photo_url   String?  // web-relative path to student photo from RMC, e.g. /uploads/photo.jpg
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user        users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  batch       batches  @relation(fields: [batch_id], references: [id], onDelete: Restrict)
+  batch_memberships student_batch_memberships[]
+  exam_attempts exam_attempts[]
+  exam_gate_sessions exam_gate_sessions[]
+  exam_attempt_violations exam_attempt_violations[]
+  student_exam_paper_instances student_exam_paper_instances[]
+  student_exam_review_unlocks student_exam_review_unlocks[]
+  practice_question_attempts practice_question_attempts[]
+  practice_attempts practice_attempts[]
+  leaderboard_entries leaderboard_entries[]
+
+  @@index([batch_id, active])
+}
+
+model student_batch_memberships {
+  id         Int      @id @default(autoincrement())
+  student_id Int
+  batch_id   Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  student student_profiles @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  batch   batches          @relation(fields: [batch_id], references: [id], onDelete: Cascade)
+
+  @@unique([student_id, batch_id])
+  @@index([batch_id])
+  @@index([student_id])
+}
+
+model teacher_profiles {
+  id            Int      @id @default(autoincrement())
+  user_id       Int      @unique
+  employee_code String?  @unique
+  active        Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([active])
+}
+
+model batches {
+  id            Int      @id @default(autoincrement())
+  name          String   @unique
+  description   String?
+  academic_year String?
+  active        Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  student_profiles student_profiles[]
+  student_batch_memberships student_batch_memberships[]
+  identity_bridge  identity_bridge[]
+  exams            exams[]
+  exam_assignments  exam_assignments[]
+  question_papers   question_papers[] @relation("batches_question_papers")
+
+  @@index([active])
+}
+
+model identity_bridge {
+  id              Int      @id @default(autoincrement())
+  source_system   String
+  source_uid      String
+  role            UserRole
+  display_name    String?
+  batch_id        Int?
+  user_id         Int?
+  active          Boolean  @default(true)
+  last_synced_at  DateTime?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  batch batches? @relation(fields: [batch_id], references: [id], onDelete: SetNull)
+  user  users?   @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@unique([source_system, source_uid, role])
+  @@index([user_id])
+}
+
+model question_papers {
+  id           Int                 @id @default(autoincrement())
+  title        String
+  batch_id     Int?
+  category     String?
+  status       QuestionPaperStatus @default(DRAFT)
+  instructions String?
+  is_self_practice_enabled Boolean @default(false)
+  self_practice_duration_seconds Int?
+  self_practice_solution_policy SelfPracticeSolutionPolicy? @default(AFTER_SUBMIT)
+  created_by   Int
+  created_at   DateTime            @default(now())
+  updated_at   DateTime            @updatedAt
+
+  batch batches? @relation("batches_question_papers", fields: [batch_id], references: [id], onDelete: SetNull)
+  created_user users @relation("question_papers_created_by", fields: [created_by], references: [id], onDelete: Restrict)
+  sections question_paper_sections[]
+  questions paper_questions[]
+  versions question_paper_versions[]
+  practice_attempts practice_attempts[]
+  exams exams[]
+
+  @@index([created_by])
+  @@index([status])
+  @@index([batch_id, status])
+  @@index([is_self_practice_enabled])
+}
+
+model question_paper_sections {
+  id                   Int          @id @default(autoincrement())
+  question_paper_id    Int
+  section_code         SectionCode
+  section_order        Int
+  question_count_target Int
+  default_marks        Decimal
+  default_negative_marks Decimal    @default(0)
+  created_at           DateTime     @default(now())
+  updated_at           DateTime     @updatedAt
+
+  question_paper question_papers @relation(fields: [question_paper_id], references: [id], onDelete: Cascade)
+
+  @@unique([question_paper_id, section_code])
+  @@unique([question_paper_id, section_order])
+  @@index([question_paper_id, section_order])
+}
+
+model paper_questions {
+  id                     Int               @id @default(autoincrement())
+  question_paper_id      Int
+  section_code           SectionCode
+  question_type          QuestionType
+  question_order         Int
+  question_text          String?
+  correct_integer_answer String?
+  marks                  Decimal
+  negative_marks         Decimal           @default(0)
+  is_active              Boolean           @default(true)
+  created_by             Int
+  created_at             DateTime          @default(now())
+  updated_at             DateTime          @updatedAt
+
+  question_paper question_papers @relation(fields: [question_paper_id], references: [id], onDelete: Cascade)
+  created_user users @relation("paper_questions_created_by", fields: [created_by], references: [id], onDelete: Restrict)
+  options paper_question_options[]
+  media paper_question_media[]
+  version_snapshots question_paper_version_questions[] @relation("question_paper_version_original_question")
+
+  @@unique([question_paper_id, section_code, question_order])
+  @@index([question_paper_id, section_code, question_order])
+  @@index([question_paper_id, question_type])
+  @@index([created_by, created_at])
+}
+
+model paper_question_options {
+  id             Int      @id @default(autoincrement())
+  paper_question_id Int
+  option_label   String
+  option_text    String?
+  option_order   Int
+  is_correct     Boolean  @default(false)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  paper_question paper_questions @relation(fields: [paper_question_id], references: [id], onDelete: Cascade)
+  version_snapshots question_paper_version_options[] @relation("question_paper_version_original_option")
+
+  @@unique([paper_question_id, option_label])
+  @@unique([paper_question_id, option_order])
+  @@index([paper_question_id, option_order])
+  @@index([paper_question_id, is_correct])
+}
+
+model paper_question_media {
+  id             Int                  @id @default(autoincrement())
+  paper_question_id Int
+  purpose        QuestionMediaPurpose
+  storage_url    String
+  mime_type      String
+  checksum       String?
+  width          Int?
+  height         Int?
+  sort_order     Int                  @default(0)
+  uploaded_by    Int
+  created_at     DateTime             @default(now())
+
+  paper_question paper_questions @relation(fields: [paper_question_id], references: [id], onDelete: Cascade)
+  uploaded_user users @relation("paper_question_media_uploaded_by", fields: [uploaded_by], references: [id], onDelete: Restrict)
+  version_snapshots question_paper_version_media[] @relation("question_paper_version_original_media")
+
+  @@index([paper_question_id, purpose])
+  @@index([paper_question_id, purpose, sort_order])
+  @@index([uploaded_by, created_at])
+}
+
+model question_paper_versions {
+  id                   Int                 @id @default(autoincrement())
+  question_paper_id    Int
+  version_number       Int
+  title_snapshot       String
+  instructions_snapshot String?
+  created_from_status  QuestionPaperStatus
+  created_by           Int
+  created_at           DateTime            @default(now())
+
+  question_paper question_papers @relation(fields: [question_paper_id], references: [id], onDelete: Cascade)
+  created_user users @relation("question_paper_versions_created_by", fields: [created_by], references: [id], onDelete: Restrict)
+  sections question_paper_version_sections[]
+  questions question_paper_version_questions[]
+  practice_attempts practice_attempts[]
+  exams exams[]
+  student_exam_paper_instances student_exam_paper_instances[]
+
+  @@unique([question_paper_id, version_number])
+  @@index([question_paper_id, version_number])
+  @@index([created_by, created_at])
+}
+
+model question_paper_version_sections {
+  id                    Int          @id @default(autoincrement())
+  version_id            Int
+  section_code          SectionCode
+  section_order         Int
+  question_count_target Int
+  default_marks         Decimal
+  default_negative_marks Decimal     @default(0)
+  created_at            DateTime     @default(now())
+  updated_at            DateTime     @updatedAt
+
+  version question_paper_versions @relation(fields: [version_id], references: [id], onDelete: Cascade)
+
+  @@unique([version_id, section_code])
+  @@unique([version_id, section_order])
+  @@index([version_id, section_order])
+}
+
+model question_paper_version_questions {
+  id                     Int              @id @default(autoincrement())
+  version_id             Int
+  original_question_id   Int?
+  section_code           SectionCode
+  question_type          QuestionType
+  question_order         Int
+  question_text          String?
+  correct_integer_answer String?
+  marks                  Decimal
+  negative_marks         Decimal          @default(0)
+  is_active_snapshot     Boolean          @default(true)
+  created_at             DateTime         @default(now())
+  updated_at             DateTime         @updatedAt
+
+  version question_paper_versions @relation(fields: [version_id], references: [id], onDelete: Cascade)
+  original_question paper_questions? @relation("question_paper_version_original_question", fields: [original_question_id], references: [id], onDelete: SetNull)
+  options question_paper_version_options[]
+  media question_paper_version_media[]
+  practice_attempt_answers practice_attempt_answers[]
+  student_exam_paper_questions student_exam_paper_questions[]
+  attempt_answers attempt_answers[]
+
+  @@unique([version_id, section_code, question_order])
+  @@index([version_id, section_code, question_order])
+  @@index([version_id, question_type])
+}
+
+model question_paper_version_options {
+  id                Int      @id @default(autoincrement())
+  version_question_id Int
+  original_option_id Int?
+  option_label      String
+  option_text       String?
+  option_order      Int
+  is_correct        Boolean  @default(false)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  version_question question_paper_version_questions @relation(fields: [version_question_id], references: [id], onDelete: Cascade)
+  original_option paper_question_options? @relation("question_paper_version_original_option", fields: [original_option_id], references: [id], onDelete: SetNull)
+  practice_attempt_answers practice_attempt_answers[]
+
+  @@unique([version_question_id, option_label])
+  @@unique([version_question_id, option_order])
+  @@index([version_question_id, option_order])
+  @@index([version_question_id, is_correct])
+}
+
+model question_paper_version_media {
+  id                Int      @id @default(autoincrement())
+  version_question_id Int
+  original_media_id  Int?
+  purpose            QuestionMediaPurpose
+  storage_url        String
+  mime_type          String
+  checksum           String?
+  width              Int?
+  height             Int?
+  sort_order         Int      @default(0)
+  created_at         DateTime @default(now())
+
+  version_question question_paper_version_questions @relation(fields: [version_question_id], references: [id], onDelete: Cascade)
+  original_media paper_question_media? @relation("question_paper_version_original_media", fields: [original_media_id], references: [id], onDelete: SetNull)
+
+  @@index([version_question_id, purpose])
+  @@index([version_question_id, purpose, sort_order])
+}
+
+model exams {
+  id                      Int                    @id @default(autoincrement())
+  title                   String
+  batch_id                Int?
+  question_paper_id       Int?
+  question_paper_version_id Int?
+  status                  ExamStatus             @default(DRAFT)
+  exam_mode               ExamMode               @default(LIVE)
+  duration_seconds        Int
+  instructions            String?
+  solution_release_policy  SolutionReleasePolicy
+  exam_date_time          DateTime?
+  published_at            DateTime?
+  closed_at               DateTime?
+  result_released_at      DateTime?
+  started_at              DateTime?
+  manually_started_by     Int?
+  created_by              Int
+  updated_by              Int?
+  created_at              DateTime               @default(now())
+  updated_at              DateTime               @updatedAt
+
+  batch       batches? @relation(fields: [batch_id], references: [id], onDelete: SetNull)
+  created_user users   @relation("exams_created_by", fields: [created_by], references: [id], onDelete: Restrict)
+  updated_user users?  @relation("exams_updated_by", fields: [updated_by], references: [id], onDelete: SetNull)
+  started_user users?  @relation("exams_started_by", fields: [manually_started_by], references: [id], onDelete: SetNull)
+  question_paper question_papers? @relation(fields: [question_paper_id], references: [id], onDelete: SetNull)
+  question_paper_version question_paper_versions? @relation(fields: [question_paper_version_id], references: [id], onDelete: SetNull)
+  exam_sections exam_sections[]
+  section_delivery_rules exam_section_delivery_rules[]
+  questions    questions[]
+  exam_assignments exam_assignments[]
+  exam_attempts exam_attempts[]
+  practice_question_attempts practice_question_attempts[]
+  exam_gate_sessions exam_gate_sessions[]
+  exam_attempt_violations exam_attempt_violations[]
+  student_exam_paper_instances student_exam_paper_instances[]
+  student_exam_review_unlocks student_exam_review_unlocks[]
+
+  @@index([batch_id, status])
+  @@index([status, exam_date_time])
+  @@index([created_by, created_at])
+  @@index([question_paper_id])
+  @@index([question_paper_version_id])
+  @@index([started_at])
+  @@index([manually_started_by])
+}
+
+model exam_sections {
+  id                     Int          @id @default(autoincrement())
+  exam_id                Int
+  section_code           SectionCode
+  section_order          Int
+  question_count_target   Int
+  default_marks           Decimal
+  default_negative_marks  Decimal     @default(0)
+  created_at              DateTime    @default(now())
+  updated_at              DateTime    @updatedAt
+
+  exam exams @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+
+  @@unique([exam_id, section_code])
+  @@unique([exam_id, section_order])
+  @@index([exam_id, section_order])
+}
+
+model exam_section_delivery_rules {
+  id                  Int                     @id @default(autoincrement())
+  exam_id             Int
+  section_code        SectionCode
+  questions_to_deliver Int
+  selection_strategy  QuestionSelectionStrategy
+  order_strategy      QuestionOrderStrategy
+  section_time_limit_seconds Int?
+  created_at          DateTime                @default(now())
+  updated_at          DateTime                @updatedAt
+
+  exam exams @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+
+  @@unique([exam_id, section_code])
+  @@index([exam_id])
+}
+
+model questions {
+  id                      Int                 @id @default(autoincrement())
+  exam_id                 Int
+  section_code            SectionCode
+  question_type           QuestionType
+  question_order          Int
+  question_text           String?
+  correct_integer_answer  String?
+  answer_explanation_text String?
+  marks                   Decimal
+  negative_marks          Decimal             @default(0)
+  difficulty              String?
+  topic                   String?
+  chapter                 String?
+  source_type             QuestionSourceType   @default(TEXT)
+  is_active               Boolean             @default(true)
+  // Optional per-question timer for live exams (60–300 seconds). NULL = no question-level timer.
+  question_time_limit_seconds Int?
+  created_by              Int
+  updated_by              Int?
+  created_at              DateTime            @default(now())
+  updated_at              DateTime            @updatedAt
+
+  exam                    exams               @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  created_user            users               @relation("questions_created_by", fields: [created_by], references: [id], onDelete: Restrict)
+  updated_user            users?              @relation("questions_updated_by", fields: [updated_by], references: [id], onDelete: SetNull)
+  question_options        question_options[]
+  question_media          question_media[]
+  attempt_answers         attempt_answers[]
+  practice_question_attempts practice_question_attempts[]
+
+  @@unique([exam_id, section_code, question_order])
+  @@index([exam_id, section_code, question_order])
+  @@index([exam_id, question_type])
+  @@index([created_by, created_at])
+}
+
+model question_options {
+  id            Int      @id @default(autoincrement())
+  question_id   Int
+  option_label  String
+  option_text   String
+  option_order  Int
+  is_correct    Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  question questions @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  attempt_answers attempt_answers[]
+
+  @@unique([question_id, option_label])
+  @@unique([question_id, option_order])
+  @@index([question_id, option_order])
+  @@index([question_id, is_correct])
+}
+
+model question_media {
+  id            Int                  @id @default(autoincrement())
+  question_id   Int
+  purpose       QuestionMediaPurpose
+  storage_url   String
+  mime_type     String
+  checksum      String?
+  width         Int?
+  height        Int?
+  sort_order    Int                  @default(0)
+  uploaded_by   Int
+  created_at    DateTime             @default(now())
+
+  question questions @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  uploaded_user users @relation(fields: [uploaded_by], references: [id], onDelete: Restrict)
+
+  @@index([question_id, purpose])
+  @@index([question_id, purpose, sort_order])
+  @@index([uploaded_by, created_at])
+}
+
+model exam_assignments {
+  id           Int      @id @default(autoincrement())
+  exam_id      Int
+  batch_id     Int
+  student_uid  String?
+  visible_from DateTime?
+  visible_until DateTime?
+  created_at   DateTime @default(now())
+  created_by   Int
+
+  exam  exams   @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  batch batches @relation(fields: [batch_id], references: [id], onDelete: Restrict)
+  creator users @relation(fields: [created_by], references: [id], onDelete: Restrict)
+
+  @@index([exam_id, batch_id])
+  @@index([exam_id, student_uid])
+  @@index([batch_id, visible_from])
+}
+
+model exam_attempts {
+  id                   Int           @id @default(autoincrement())
+  exam_id              Int
+  student_id           Int
+  status               AttemptStatus @default(IN_PROGRESS)
+  started_at           DateTime
+  ends_at              DateTime
+  submitted_at         DateTime?
+  last_heartbeat_at    DateTime?
+  is_auto_submitted    Boolean       @default(false)
+  device_id            String?
+  assigned_paper_instance_id Int? @unique
+  server_time_offset_ms Int?
+  created_at           DateTime      @default(now())
+  updated_at           DateTime      @updatedAt
+
+  exam    exams            @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  student student_profiles @relation(fields: [student_id], references: [id], onDelete: Restrict)
+  assigned_paper_instance student_exam_paper_instances? @relation(fields: [assigned_paper_instance_id], references: [id], onDelete: SetNull)
+  attempt_answers attempt_answers[]
+  attempt_section_results attempt_section_results[]
+  attempt_result attempt_results?
+  gate_session exam_gate_sessions? @relation("exam_gate_session_attempt")
+  exam_attempt_violations exam_attempt_violations[]
+  student_exam_review_unlocks student_exam_review_unlocks[]
+  leaderboard_entries leaderboard_entries[]
+
+  @@unique([exam_id, student_id])
+  @@index([exam_id, status])
+  @@index([student_id, started_at])
+  @@index([exam_id, student_id, status])
+  @@index([assigned_paper_instance_id])
+}
+
+model exam_gate_sessions {
+  id                  Int               @id @default(autoincrement())
+  exam_id             Int
+  student_id          Int
+  uid_snapshot        String
+  device_id           String
+  qr_token_hash       String
+  qr_expires_at       DateTime
+  gate_status         ExamGateStatus    @default(WAITING_FOR_SCAN)
+  device_bind_status   DeviceBindStatus  @default(UNBOUND)
+  paper_download_status PaperDownloadStatus @default(NOT_STARTED)
+  has_overlay_permission Boolean           @default(false)
+  bypass_restrictions Boolean             @default(false)
+  verified_by_teacher_id Int?
+  verified_at         DateTime?
+  attempt_id          Int?              @unique
+  created_at          DateTime          @default(now())
+  updated_at          DateTime          @updatedAt
+
+  exam                exams             @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  student             student_profiles   @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  verified_by_teacher users?            @relation("exam_gate_sessions_verified_by_teacher", fields: [verified_by_teacher_id], references: [id], onDelete: SetNull)
+  attempt             exam_attempts?     @relation("exam_gate_session_attempt", fields: [attempt_id], references: [id], onDelete: SetNull)
+  exam_attempt_violations exam_attempt_violations[]
+  assigned_paper_instance student_exam_paper_instances?
+
+  @@unique([exam_id, student_id])
+  // @@unique([exam_id, device_id]) — removed: one-device-per-exam adds no security
+  // in a physical classroom where the teacher personally scans every QR, and it
+  // blocks testing (multiple student accounts on the same development device).
+  // Device binding is still enforced via device_bind_status + device_id checks.
+  @@index([exam_id, device_id])
+  @@index([exam_id])
+  @@index([student_id])
+  @@index([qr_token_hash])
+  @@index([attempt_id])
+  @@index([verified_by_teacher_id])
+}
+
+model student_exam_paper_instances {
+  id                            Int                      @id @default(autoincrement())
+  exam_id                       Int
+  student_id                    Int
+  gate_session_id               Int                      @unique
+  question_paper_version_id     Int
+  assigned_student_number       Int
+  variant_seed                  String
+  status                        AssignedPaperStatus      @default(GENERATED)
+  review_package_lock_status    ReviewPackageLockStatus  @default(LOCKED)
+  review_key_id                 String?
+  live_package_checksum         String?
+  locked_review_package_checksum String?
+  generated_at                  DateTime?
+  // Anti-collision diagnostics: how many shuffle perturbations were needed and the
+  // worst position-collision rate observed against the K nearest prior students.
+  perturbation_count            Int                      @default(0)
+  max_neighbor_collision        Float?
+  created_at                    DateTime                 @default(now())
+  updated_at                    DateTime                 @updatedAt
+
+  exam exams @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  student student_profiles @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  gate_session exam_gate_sessions @relation(fields: [gate_session_id], references: [id], onDelete: Cascade)
+  question_paper_version question_paper_versions @relation(fields: [question_paper_version_id], references: [id], onDelete: Cascade)
+  questions student_exam_paper_questions[]
+  review_unlocks student_exam_review_unlocks[]
+  attempt_results attempt_results[]
+  attempt exam_attempts?
+
+  @@unique([exam_id, student_id])
+  @@unique([exam_id, assigned_student_number])
+  @@index([exam_id])
+  @@index([student_id])
+  @@index([question_paper_version_id])
+}
+
+model student_exam_paper_questions {
+  id                      Int      @id @default(autoincrement())
+  instance_id             Int
+  version_question_id     Int
+  section_code            SectionCode
+  student_question_order  Int
+  section_question_order  Int
+  original_question_order Int
+  created_at              DateTime @default(now())
+
+  instance student_exam_paper_instances @relation(fields: [instance_id], references: [id], onDelete: Cascade)
+  version_question question_paper_version_questions @relation(fields: [version_question_id], references: [id], onDelete: Cascade)
+  attempt_answers attempt_answers[]
+
+  @@unique([instance_id, version_question_id])
+  @@unique([instance_id, student_question_order])
+  @@unique([instance_id, section_code, section_question_order])
+  @@index([instance_id])
+  @@index([version_question_id])
+  @@index([section_code])
+}
+
+model student_exam_review_unlocks {
+  id              Int      @id @default(autoincrement())
+  instance_id     Int      @unique
+  attempt_id      Int?
+  student_id      Int
+  exam_id         Int
+  unlock_token_hash String
+  issued_at       DateTime @default(now())
+  expires_at      DateTime?
+  used_at         DateTime?
+
+  instance student_exam_paper_instances @relation(fields: [instance_id], references: [id], onDelete: Cascade)
+  attempt exam_attempts? @relation(fields: [attempt_id], references: [id], onDelete: SetNull)
+  student student_profiles @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  exam exams @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+
+  @@index([exam_id, student_id])
+  @@index([issued_at])
+  @@index([attempt_id])
+}
+
+model exam_attempt_violations {
+  id              Int                  @id @default(autoincrement())
+  exam_id         Int
+  attempt_id      Int?
+  gate_session_id Int?
+  student_id      Int
+  device_id       String?
+  violation_type  ExamViolationType
+  severity        ExamViolationSeverity
+  message         String?
+  metadata_json   String?
+  created_at      DateTime             @default(now())
+
+  exam        exams              @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  attempt     exam_attempts?     @relation(fields: [attempt_id], references: [id], onDelete: SetNull)
+  gate_session exam_gate_sessions? @relation(fields: [gate_session_id], references: [id], onDelete: SetNull)
+  student     student_profiles    @relation(fields: [student_id], references: [id], onDelete: Cascade)
+
+  @@index([exam_id, created_at])
+  @@index([attempt_id])
+  @@index([gate_session_id])
+  @@index([student_id, created_at])
+}
+
+model attempt_answers {
+  id                  Int      @id @default(autoincrement())
+  attempt_id          Int
+  question_id         Int
+  assigned_question_id Int?
+  version_question_id  Int?
+  selected_option_id  Int?
+  integer_answer      String?
+  is_marked_for_review Boolean @default(false)
+  // True when the per-question timer expired before the student answered.
+  // Scoring treats timed_out as wrong (negative marks deducted).
+  timed_out           Boolean @default(false)
+  saved_at            DateTime
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  attempt   exam_attempts  @relation(fields: [attempt_id], references: [id], onDelete: Cascade)
+  question  questions      @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  assigned_question student_exam_paper_questions? @relation(fields: [assigned_question_id], references: [id], onDelete: SetNull)
+  version_question question_paper_version_questions? @relation(fields: [version_question_id], references: [id], onDelete: SetNull)
+  selected_option question_options? @relation(fields: [selected_option_id], references: [id], onDelete: SetNull)
+
+  @@unique([attempt_id, question_id])
+  @@index([attempt_id, question_id])
+  @@index([question_id])
+  @@index([assigned_question_id])
+  @@index([version_question_id])
+}
+
+model attempt_section_results {
+  id               Int          @id @default(autoincrement())
+  attempt_id       Int
+  section_code     SectionCode
+  score            Decimal
+  correct_count    Int
+  wrong_count      Int
+  unattempted_count Int
+  max_score        Decimal
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
+
+  attempt exam_attempts @relation(fields: [attempt_id], references: [id], onDelete: Cascade)
+
+  @@unique([attempt_id, section_code])
+  @@index([attempt_id, section_code])
+}
+
+model attempt_results {
+  id                  Int      @id @default(autoincrement())
+  attempt_id          Int      @unique
+  assigned_paper_instance_id Int?
+  total_score         Decimal
+  max_score           Decimal
+  percentage          Decimal
+  correct_count       Int
+  wrong_count         Int
+  unattempted_count   Int
+  rank_exam           Int?
+  rank_batch          Int?
+  rank_overall        Int?
+  result_released_at  DateTime?
+  evaluated_question_paper_version_id Int?
+  evaluated_question_paper_version_number Int?
+  scoring_source      String?  @default("LEGACY_EXAM_QUESTIONS")
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  attempt exam_attempts @relation(fields: [attempt_id], references: [id], onDelete: Cascade)
+  assigned_paper_instance student_exam_paper_instances? @relation(fields: [assigned_paper_instance_id], references: [id], onDelete: SetNull)
+
+  @@index([rank_exam])
+  @@index([rank_batch])
+  @@index([rank_overall])
+  @@index([attempt_id])
+  @@index([evaluated_question_paper_version_id])
+  @@index([assigned_paper_instance_id])
+}
+
+model practice_attempts {
+  id                        Int                         @id @default(autoincrement())
+  student_id                Int
+  practice_question_paper_id Int
+  practice_question_paper_version_id Int
+  attempt_context           AttemptContext              @default(SELF_PRACTICE)
+  status                    AttemptStatus               @default(IN_PROGRESS)
+  counts_for_leaderboard    Boolean                     @default(false)
+  counts_for_official_result Boolean                    @default(false)
+  duration_seconds_snapshot  Int?
+  solution_policy_snapshot   SelfPracticeSolutionPolicy  @default(AFTER_SUBMIT)
+  started_at                DateTime
+  ends_at                   DateTime?
+  submitted_at              DateTime?
+  last_heartbeat_at         DateTime?
+  is_auto_submitted         Boolean                     @default(false)
+  device_id                 String?
+  server_time_offset_ms     Int?
+  created_at                DateTime                    @default(now())
+  updated_at                DateTime                    @updatedAt
+
+  student student_profiles @relation(fields: [student_id], references: [id], onDelete: Restrict)
+  practice_question_paper question_papers @relation(fields: [practice_question_paper_id], references: [id], onDelete: Restrict)
+  practice_question_paper_version question_paper_versions @relation(fields: [practice_question_paper_version_id], references: [id], onDelete: Restrict)
+  attempt_answers practice_attempt_answers[]
+  attempt_section_results practice_attempt_section_results[]
+  attempt_result practice_attempt_results?
+
+  @@index([student_id, status])
+  @@index([student_id, practice_question_paper_id, status])
+  @@index([practice_question_paper_id, created_at])
+  @@index([practice_question_paper_version_id])
+}
+
+model practice_attempt_answers {
+  id                    Int      @id @default(autoincrement())
+  practice_attempt_id   Int
+  version_question_id   Int
+  selected_option_id    Int?
+  integer_answer        String?
+  is_marked_for_review  Boolean  @default(false)
+  saved_at              DateTime
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  practice_attempt practice_attempts @relation(fields: [practice_attempt_id], references: [id], onDelete: Cascade)
+  version_question question_paper_version_questions @relation(fields: [version_question_id], references: [id], onDelete: Cascade)
+  selected_option question_paper_version_options? @relation(fields: [selected_option_id], references: [id], onDelete: SetNull)
+
+  @@unique([practice_attempt_id, version_question_id])
+  @@index([practice_attempt_id, version_question_id])
+  @@index([version_question_id])
+}
+
+model practice_attempt_section_results {
+  id                Int          @id @default(autoincrement())
+  practice_attempt_id Int
+  section_code      SectionCode
+  score             Decimal
+  correct_count     Int
+  wrong_count       Int
+  unattempted_count Int
+  max_score         Decimal
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+
+  practice_attempt practice_attempts @relation(fields: [practice_attempt_id], references: [id], onDelete: Cascade)
+
+  @@unique([practice_attempt_id, section_code])
+  @@index([practice_attempt_id, section_code])
+}
+
+model practice_attempt_results {
+  id                                   Int      @id @default(autoincrement())
+  practice_attempt_id                  Int      @unique
+  total_score                          Decimal
+  max_score                            Decimal
+  percentage                           Decimal
+  correct_count                        Int
+  wrong_count                          Int
+  unattempted_count                    Int
+  result_released_at                   DateTime?
+  evaluated_question_paper_version_id  Int?
+  evaluated_question_paper_version_number Int?
+  scoring_source                       String?  @default("SELF_PRACTICE_VERSION")
+  created_at                           DateTime @default(now())
+  updated_at                           DateTime @updatedAt
+
+  practice_attempt practice_attempts @relation(fields: [practice_attempt_id], references: [id], onDelete: Cascade)
+
+  @@index([practice_attempt_id])
+  @@index([evaluated_question_paper_version_id])
+}
+
+model practice_question_attempts {
+  id                  Int      @id @default(autoincrement())
+  student_id          Int
+  exam_id             Int
+  question_id         Int
+  attempt_count       Int      @default(0)
+  wrong_count         Int      @default(0)
+  correct_count       Int      @default(0)
+  last_answer         String?
+  solution_unlocked   Boolean  @default(false)
+  solution_unlocked_at DateTime?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  student student_profiles @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  exam exams @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  question questions @relation(fields: [question_id], references: [id], onDelete: Cascade)
+
+  @@unique([student_id, exam_id, question_id])
+  @@index([student_id, exam_id])
+  @@index([question_id])
+  @@index([solution_unlocked])
+}
+
+model leaderboard_entries {
+  id              Int              @id @default(autoincrement())
+  scope_type      LeaderboardScope
+  scope_id        Int?
+  attempt_id      Int
+  student_id      Int
+  rank            Int
+  score           Decimal
+  percentage      Decimal
+  tie_break_value Int?
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+
+  attempt exam_attempts @relation(fields: [attempt_id], references: [id], onDelete: Cascade)
+  student student_profiles @relation(fields: [student_id], references: [id], onDelete: Cascade)
+
+  @@index([scope_type, scope_id, rank])
+  @@index([scope_type, scope_id, score, percentage])
+  @@index([student_id, created_at])
+}
+
+model exam_audit_logs {
+  id             Int            @id @default(autoincrement())
+  actor_user_id  Int?
+  actor_role     AuditActorRole
+  action         String
+  entity_type    String
+  entity_id      String
+  metadata_json  String?
+  ip_address     String?
+  device_id      String?
+  created_at     DateTime       @default(now())
+
+  actor users? @relation("audit_actor", fields: [actor_user_id], references: [id], onDelete: SetNull)
+
+  @@index([entity_type, entity_id])
+  @@index([actor_user_id, created_at])
+  @@index([action, created_at])
+}
+
+// OTA Update Registry — tracks published APK releases and pre-generated binary patches
+model apk_releases {
+  id              Int      @id @default(autoincrement())
+  version_code    Int      @unique
+  version_name    String
+  apk_path        String   // server-relative path, e.g. uploads/releases/v4.apk
+  file_size       Int      // bytes
+  sha256          String
+  release_notes   String   @default("[]") // JSON array of strings
+  mandatory       Boolean  @default(false)
+  published_at    DateTime @default(now())
+  created_at      DateTime @default(now())
+
+  patches_from    apk_patches[] @relation("patch_source")
+  patches_to      apk_patches[] @relation("patch_target")
+
+  @@index([version_code])
+  @@index([published_at])
+}
+
+model apk_patches {
+  id                  Int      @id @default(autoincrement())
+  from_version_code   Int
+  to_version_code     Int
+  patch_path          String   // server-relative path, e.g. uploads/patches/v3_to_v4.patch.gz
+  patch_size          Int      // compressed patch bytes
+  full_apk_size       Int      // size of the full target APK (for strategy comparison)
+  sha256              String   // SHA-256 of the decompressed patch file
+  created_at          DateTime @default(now())
+
+  source_release  apk_releases @relation("patch_source", fields: [from_version_code], references: [version_code], onDelete: Cascade)
+  target_release  apk_releases @relation("patch_target", fields: [to_version_code], references: [version_code], onDelete: Cascade)
+
+  @@unique([from_version_code, to_version_code])
+  @@index([from_version_code])
+  @@index([to_version_code])
+}
+

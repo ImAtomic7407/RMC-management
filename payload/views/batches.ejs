@@ -1,0 +1,242 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMC | Batch Manager</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-layout">
+    <div class="vibrant-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+        <div class="blob blob-5"></div>
+    </div>
+
+    <%- include('partials/sidebar', { user, activePage: 'batches' }) %>
+
+    <div id="edit-modal" class="modal-overlay hidden">
+        <div class="glass-container edit-panel">
+            <h3>Edit Batch</h3>
+            <p class="pane-subtitle">Update batch name or description.</p>
+            <form id="edit-batch-form" class="mt-20">
+                <input type="hidden" id="edit-id">
+                <div class="input-group">
+                    <label>Batch Name</label>
+                    <input type="text" id="edit-name" class="input-glass" required>
+                </div>
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea id="edit-description" class="input-glass" rows="3"></textarea>
+                </div>
+                <div class="modal-actions mt-20">
+                    <button type="button" class="btn-glass sm" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn-neon sm">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div class="h-info">
+                <h1>Batch Manager</h1>
+                <p>Create batches and view attendance trends.</p>
+            </div>
+        </header>
+
+        <section class="batch-split">
+            <div class="glass-container pane">
+                <h3>Create New Batch</h3>
+                <p class="pane-subtitle">A student table is created automatically.</p>
+                <form id="add-batch-form" class="mt-40">
+                    <div class="input-group">
+                        <label>Batch Name</label>
+                        <input type="text" name="name" class="input-glass" placeholder="e.g. Morning_11th" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Description</label>
+                        <textarea name="description" class="input-glass" rows="3" placeholder="Optional"></textarea>
+                    </div>
+                    <button type="submit" class="btn-neon full-width">Create Batch</button>
+                </form>
+            </div>
+
+            <div class="glass-container pane">
+                <h3>Batch List</h3>
+                <div class="table-wrapper mt-20">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="batch-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="batch-insights" class="glass-container pane mt-40 hidden">
+            <div class="section-header">
+                <h3>Attendance Trend: <span id="insight-batch-name">...</span></h3>
+                <p class="pane-subtitle">Present and late count for each session.</p>
+            </div>
+            <div class="chart-container-large">
+                <canvas id="attendance-chart"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const batchList = document.getElementById('batch-list');
+        const addForm = document.getElementById('add-batch-form');
+        const editModal = document.getElementById('edit-modal');
+        const editForm = document.getElementById('edit-batch-form');
+
+        async function loadBatches() {
+            const res = await fetch('/api/batches');
+            const batches = await res.json();
+            batchList.innerHTML = batches.map((b) => `
+                <tr class="glow-on-hover">
+                    <td><span class="batch-name">${b.name}</span></td>
+                    <td><span class="status-active">ACTIVE</span></td>
+                    <td>
+                        <div class="action-row">
+                            <button class="btn-glass sm info" onclick="showInsights('${b.name}')">Stats</button>
+                            <button class="btn-glass sm info" onclick="openEditModal(${b.id}, '${b.name}', '${(b.description || '').replace(/'/g, "&#39;")}')">Edit</button>
+                            <button class="btn-glass sm danger" onclick="deleteBatch(${b.id}, '${b.name}')">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        addForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(addForm));
+            const res = await fetch('/api/batches', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const payload = await res.json();
+            if (payload.status === 'success') {
+                alert('Batch created.');
+                addForm.reset();
+                loadBatches();
+            } else {
+                alert(payload.error || 'Could not create batch.');
+            }
+        };
+
+        function openEditModal(id, name, desc) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-name').value = name;
+            document.getElementById('edit-description').value = desc;
+            editModal.classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            editModal.classList.add('hidden');
+        }
+
+        editForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const payload = {
+                name: document.getElementById('edit-name').value,
+                description: document.getElementById('edit-description').value
+            };
+            const res = await fetch(`/api/batches/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                closeEditModal();
+                loadBatches();
+            }
+        };
+
+        async function deleteBatch(id, name) {
+            if (!confirm(`Delete batch ${name}? This cannot be undone.`)) return;
+            await fetch(`/api/batches/${id}`, { method: 'DELETE' });
+            loadBatches();
+        }
+
+        let trendChart = null;
+        async function showInsights(batchName) {
+            document.getElementById('batch-insights').classList.remove('hidden');
+            document.getElementById('insight-batch-name').textContent = batchName;
+
+            const res = await fetch(`/api/batches/${encodeURIComponent(batchName)}/history`);
+            const history = await res.json();
+
+            const labels = history.map((h) => h.date);
+            const presentData = history.map((h) => h.present);
+            const lateData = history.map((h) => h.late);
+
+            const ctx = document.getElementById('attendance-chart').getContext('2d');
+            if (trendChart) trendChart.destroy();
+
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Present', data: presentData, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.35 },
+                        { label: 'Late', data: lateData, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: true, tension: 0.35 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#fff' } } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#fff' } },
+                        x: { grid: { display: false }, ticks: { color: '#fff' } }
+                    }
+                }
+            });
+
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        loadBatches();
+    </script>
+
+    <style>
+        .batch-split { display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px; margin-top: 40px; }
+        .pane { padding: 40px; }
+        .pane-subtitle { color: var(--text-secondary); font-size: 0.92rem; margin-top: 7px; }
+        .batch-name { color: var(--text-primary); font-weight: 700; font-size: 1.05rem; }
+        .status-active { color: #22c55e; font-weight: 800; font-size: 0.82rem; letter-spacing: 0.8px; }
+        .btn-neon.full-width { width: 100%; border-radius: 12px; }
+        .action-row { display: flex; gap: 10px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .edit-panel { width: 100%; max-width: 500px; padding: 40px; }
+        .hidden { display: none !important; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .chart-container-large { height: 390px; margin-top: 20px; }
+        @media (max-width: 1100px) { .batch-split { grid-template-columns: 1fr; } }
+        @media (max-width: 800px) {
+            .pane { padding: 20px; }
+            .action-row { flex-wrap: wrap; }
+            .action-row .btn-glass.sm { flex: 1 1 auto; min-width: 92px; }
+            table th, table td { padding: 12px 10px; }
+        }
+        @media (max-width: 560px) {
+            .edit-panel { max-width: 94vw; padding: 20px; }
+            .modal-actions { flex-direction: column-reverse; }
+            .modal-actions .btn-glass, .modal-actions .btn-neon { width: 100%; }
+            .chart-container-large { height: 290px; }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "RMC Mobile",
+    "slug": "rmc-mobile",
+    "version": "1.0.18",
+    "orientation": "portrait",
+    "scheme": "rmcmobile",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/rmc-logo-square.png",
+    "splash": {
+      "image": "./assets/rmc-logo-square.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "enabled": false,
+      "url": "https://u.expo.dev/8f8b8a8a-13ec-484e-9c4c-ff9b4056a943",
+      "checkAutomatically": "NEVER",
+      "requestHeaders": {
+        "expo-channel-name": "production"
+      }
+    },
+    "android": {
+      "package": "in.rmc.mobile",
+      "versionCode": 25,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/rmc-logo-square.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "permissions": [
+        "CAMERA",
+        "VIBRATE"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8f8b8a8a-13ec-484e-9c4c-ff9b4056a943"
+      }
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-updates",
+      "@react-native-community/datetimepicker"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+tunnel: 9f516d9a-bff0-4b27-86d1-d995b541a677
+credentials-file: C:\Users\sunny\.cloudflared\9f516d9a-bff0-4b27-86d1-d995b541a677.json
+
+ingress:
+  - hostname: login.riteshmathematics.in
+    service: http://localhost:8080
+  - hostname: automation.riteshmathematics.in
+    service: http://localhost:5678
+  - service: http_status:404

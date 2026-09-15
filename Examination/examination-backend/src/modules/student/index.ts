@@ -1,0 +1,2 @@
+export { studentRouter } from "./router";
+

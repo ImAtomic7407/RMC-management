@@ -1,0 +1,264 @@
+<% 
+  // Determine if we should hide the sidebar (Zen UI views)
+  const isZenView = typeof zenPortal !== 'undefined' && zenPortal;
+%>
+<!-- Mobile Premium Header -->
+<% if (!isZenView) { %>
+<header class="mobile-top-header">
+    <button id="mobile-hamburger" class="hamburger-btn" aria-label="Open Menu">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--zen-primary)" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    </button>
+    <div class="mobile-brand">
+        <h1 class="logo-main">RMC</h1>
+        <p class="logo-sub">Concept Se Selection Tak</p>
+    </div>
+    <div style="width: 28px;"></div> <!-- Balancer for centering -->
+</header>
+<% } %>
+<div id="mobile-sidebar-overlay" class="mobile-sidebar-overlay"></div>
+
+<aside id="main-sidebar" class="sidebar <%= isZenView ? 'desktop-hidden' : '' %>">
+    <div class="sidebar-header desktop-only">
+        <div class="logo">RMC<span>PORTAL</span></div>
+        <p class="role-badge"><%= (user.role || 'student').toUpperCase() %></p>
+    </div>
+
+    <nav id="sidebar-nav" class="sidebar-nav">
+        <% if (user.role) { %>
+            <div class="nav-group">
+                <label>Main</label>
+                <% if (user.role === 'teacher') { %>
+                    <a href="/dashboard_teacher" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'teacher_console' ? 'active' : '' %>">Teacher Console</a>
+                    <a href="/materials" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'materials' ? 'active' : '' %>">Materials</a>
+                    <a href="/leads" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'leads' ? 'active' : '' %>">
+                        Notifications
+                        <span id="lead-badge" class="nav-badge hidden">0</span>
+                    </a>
+                    <a href="/doubts" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'doubts' ? 'active' : '' %>">Doubt Portal</a>
+                    <a href="/reports" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'reports' ? 'active' : '' %>">Reports</a>
+                    <a href="/batches" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'batches' ? 'active' : '' %>">Batch Manager</a>
+                <% } else { %>
+                    <a href="/staff_gateway" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'staff_gateway' ? 'active' : '' %>">Staff Dashboard</a>
+                    <a href="/batches" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'batches' ? 'active' : '' %>">Batch Manager</a>
+                    <a href="/materials" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'materials' ? 'active' : '' %>">Materials</a>
+                    <a href="/doubts" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'doubts' ? 'active' : '' %>">Doubt Portal</a>
+                    <a href="/reports" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'reports' ? 'active' : '' %>">Reports</a>
+                    <a href="/leads" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'leads' ? 'active' : '' %>">
+                        Notifications
+                        <span id="lead-badge" class="nav-badge hidden">0</span>
+                    </a>
+                <% } %>
+            </div>
+            <div class="nav-group">
+                <label>Quick Access</label>
+                <a href="/student/portal" target="_blank" class="nav-link">Student Portal</a>
+            </div>
+        <% } else { %>
+            <div class="nav-group">
+                <label>Student</label>
+                <a href="/student/portal" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'portal' ? 'active' : '' %>">My Dashboard</a>
+                <a href="/student/doubts" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'doubts' ? 'active' : '' %>">Ask Doubt</a>
+            </div>
+        <% } %>
+
+        <div class="nav-group">
+            <label>Account</label>
+            <a href="<%= user && user.role ? '/logout' : '/student/logout' %>" class="nav-link logout">Logout</a>
+        </div>
+    </nav>
+</aside>
+
+<% if (user && user.role) { %>
+    <div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+    <script src="/js/lead_notifications.js"></script>
+    <script>
+        (() => {
+            const role = <%- JSON.stringify(user.role || '') %>;
+            const toastStack = document.getElementById('toast-stack');
+            if (!toastStack || role === 'student') return;
+            const POLL_MS = 500;
+            let latestSeenAlertId = 0;
+
+            function showReportToast(title, body, href) {
+                const toast = document.createElement('div');
+                toast.className = 'toast glass-container';
+                toast.innerHTML = `
+                    <div class="t-title">${title}</div>
+                    <div class="t-body">${body}</div>
+                    <div class="t-row">
+                        <div class="t-meta">Attendance update</div>
+                        <a class="t-link" href="${href}">Open</a>
+                    </div>
+                `;
+                toastStack.appendChild(toast);
+                window.setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(6px)';
+                    toast.style.transition = '0.25s ease';
+                    window.setTimeout(() => toast.remove(), 280);
+                }, 9000);
+            }
+
+            async function fetchWeeklyAlerts() {
+                try {
+                    const res = await fetch('/api/reports/attendance_alerts', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+                    const payload = await res.json();
+                    return Array.isArray(payload?.alerts) ? payload.alerts : [];
+                } catch {
+                    // Shared hosting can be inconsistent; keep the dashboard usable even if polling fails.
+                    return [];
+                }
+            }
+
+            async function syncWeeklyAlerts(bootstrap = false) {
+                const alerts = await fetchWeeklyAlerts();
+                let highestSeenId = latestSeenAlertId;
+
+                for (const alert of alerts) {
+                    const alertId = Number(alert?.id || 0);
+                    if (alertId > highestSeenId) {
+                        highestSeenId = alertId;
+                    }
+                    if (bootstrap || alertId <= latestSeenAlertId) {
+                        continue;
+                    }
+                    showReportToast(
+                        'Weekly attendance report ready',
+                        alert.summary || 'One or more students fell below the attendance threshold.',
+                        '/reports#weekly-alerts'
+                    );
+                }
+
+                latestSeenAlertId = Math.max(latestSeenAlertId, highestSeenId);
+            }
+
+            async function pollWeeklyAlerts() {
+                await syncWeeklyAlerts(false);
+                window.setTimeout(pollWeeklyAlerts, POLL_MS);
+            }
+
+            syncWeeklyAlerts(true).finally(() => {
+                window.setTimeout(pollWeeklyAlerts, POLL_MS);
+            });
+        })();
+    </script>
+<% } %>
+
+<style>
+    .sidebar-header { margin-bottom: 36px; text-align: center; }
+    .logo { font-size: 1.35rem; font-weight: 900; letter-spacing: 1px; color: var(--zen-primary); margin-bottom: 8px; }
+    .logo span { color: var(--accent-blue); }
+    .role-badge {
+        display: inline-block;
+        background: rgba(59,130,246,0.14);
+        color: var(--accent-blue);
+        font-size: 0.72rem;
+        font-weight: 900;
+        padding: 5px 12px;
+        border-radius: 14px;
+        letter-spacing: 1px;
+        border: 1px solid rgba(59,130,246,0.25);
+    }
+    .sidebar-toggle {
+        display: none;
+        border: 1px solid rgba(255,255,255,0.2);
+        background: rgba(15,23,42,0.45);
+        color: var(--text-primary);
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        font-weight: 800;
+    }
+    .sidebar-nav { display: flex; flex-direction: column; gap: 28px; }
+    .nav-group label {
+        display: block;
+        font-size: 0.74rem;
+        color: var(--text-secondary);
+        font-weight: 800;
+        letter-spacing: 1.3px;
+        margin-bottom: 12px;
+        margin-left: 8px;
+        text-transform: uppercase;
+    }
+    .nav-link {
+        display: block;
+        padding: 11px 14px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        transition: 0.2s;
+        margin-bottom: 4px;
+    }
+    .nav-link:hover { background: rgba(59,130,246,0.08); color: var(--zen-primary); }
+    .nav-link.active {
+        background: rgba(59,130,246,0.12);
+        color: var(--accent-blue);
+        border-left: 3px solid var(--accent-blue);
+        padding-left: 13px;
+    }
+    .nav-link.logout { color: #f87171; }
+    .nav-link.logout:hover { background: rgba(248,113,113,0.13); color: #fca5a5; }
+    /* Badge + toast styles live in /css/index.css so teacher/host pages share them. */
+
+    /* Mobile Layout Tweaks */
+    .mobile-top-header { display: none; }
+    .desktop-only { display: block; }
+    .desktop-hidden { display: none !important; }
+    .mobile-sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2999; opacity: 0; transition: opacity 0.3s; }
+    
+    @media (max-width: 1024px) {
+        .mobile-top-header {
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 2000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 12px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+        .hamburger-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 10px; margin-left: -10px; border-radius: 8px; }
+        .hamburger-btn:active { background: rgba(0,0,0,0.05); }
+        .mobile-brand { text-align: center; }
+        .mobile-brand .logo-main { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 900; color: var(--zen-primary); letter-spacing: -0.5px; margin: 0; line-height: 1; }
+        .mobile-brand .logo-sub { font-size: 0.65rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+        .desktop-only { display: none !important; }
+
+        .sidebar {
+            position: fixed;
+            top: 0; left: -320px;
+            width: 280px; height: 100dvh;
+            z-index: 3000;
+            background: var(--bg-zen);
+            border-right: 1px solid var(--glass-border);
+            transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 40px 24px;
+            overflow-y: auto;
+        }
+        .sidebar.sidebar-open { left: 0; }
+        .mobile-sidebar-overlay.active { display: block; opacity: 1; }
+        .sidebar.desktop-hidden { display: flex !important; } /* Force show on mobile so drawer works */
+    }
+</style>
+<script>
+    (function () {
+        const sidebar = document.getElementById('main-sidebar');
+        const overlay = document.getElementById('mobile-sidebar-overlay');
+        const toggle = document.getElementById('mobile-hamburger');
+        
+        if (!sidebar || !toggle) return;
+        
+        function closeSidebar() {
+            sidebar.classList.remove('sidebar-open');
+            overlay.classList.remove('active');
+        }
+
+        toggle.addEventListener('click', () => {
+            sidebar.classList.add('sidebar-open');
+            overlay.classList.add('active');
+        });
+
+        if(overlay) overlay.addEventListener('click', closeSidebar);
+    }());
+</script>

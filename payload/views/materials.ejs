@@ -1,0 +1,381 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMC | Materials</title>
+    <link rel="stylesheet" href="/css/index.css">
+</head>
+<body class="dashboard-layout">
+    <div class="vibrant-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+        <div class="blob blob-5"></div>
+    </div>
+
+    <%- include('partials/sidebar', { user, activePage: 'materials' }) %>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div class="h-info">
+                <h1>Materials</h1>
+                <p>Upload study links and assign them to one batch.</p>
+            </div>
+            <div class="h-actions">
+                <span id="materials-status" class="status-inline">Ready</span>
+            </div>
+        </header>
+
+        <section class="material-split">
+            <div class="glass-container pane">
+                <h3>Add Material</h3>
+                <p class="pane-subtitle">Students will only see materials for their batch.</p>
+                <form id="add-material-form" class="mt-40">
+                <div class="input-group">
+                    <label>Title</label>
+                    <input type="text" id="material-title" class="input-glass" placeholder="Example: Biology Notes 01" required>
+                </div>
+                <div class="input-group">
+                    <label>Batch</label>
+                    <select id="batch-material-select" class="input-glass" required>
+                        <option value="">Select batch...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Web Link</label>
+                    <input type="text" id="file-path-input" class="input-glass" placeholder="https://example.com/notes.pdf">
+                </div>
+                <div class="input-group">
+                    <label>Or Upload File</label>
+                    <input type="file" id="file-upload-input" class="input-glass" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.png,.mp4,.zip">
+                </div>
+                <div id="upload-progress-wrap" class="progress-wrap hidden" aria-live="polite">
+                    <div class="progress-meta">
+                        <span id="upload-progress-label">Uploading file...</span>
+                        <span id="upload-progress-text">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div id="upload-progress-bar" class="progress-bar"></div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea id="material-description" class="input-glass" rows="3" placeholder="Optional"></textarea>
+                </div>
+                    <button type="submit" class="btn-neon full-width">Save Material</button>
+                </form>
+            </div>
+
+            <div class="glass-container pane">
+                <h3>Saved Materials</h3>
+                <div class="table-wrapper mt-20">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Batch</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="material-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const mList = document.getElementById('material-list');
+        const bSelect = document.getElementById('batch-material-select');
+        const fileInput = document.getElementById('file-upload-input');
+        const linkInput = document.getElementById('file-path-input');
+        const uploadWrap = document.getElementById('upload-progress-wrap');
+        const uploadBar = document.getElementById('upload-progress-bar');
+        const uploadText = document.getElementById('upload-progress-text');
+        const uploadLabel = document.getElementById('upload-progress-label');
+        const materialForm = document.getElementById('add-material-form');
+        const materialsStatus = document.getElementById('materials-status');
+
+        async function fetchJsonOrThrow(url, options = {}, fallbackMessage = 'Request failed.') {
+            const response = await fetch(url, {
+                headers: { Accept: 'application/json', ...(options.headers || {}) },
+                ...options
+            });
+            const contentType = response.headers.get('content-type') || '';
+            const payload = contentType.includes('application/json')
+                ? await response.json()
+                : null;
+
+            if (!response.ok) {
+                throw new Error(payload?.error || payload?.message || fallbackMessage);
+            }
+
+            if (payload === null) {
+                throw new Error(fallbackMessage);
+            }
+
+            return payload;
+        }
+
+        function setMaterialsStatus(message, isError = false) {
+            materialsStatus.textContent = message;
+            materialsStatus.style.color = isError ? '#fca5a5' : '';
+        }
+
+        function setUploadProgress(value, label) {
+            const percent = Math.max(0, Math.min(100, Number(value) || 0));
+            uploadWrap.classList.remove('hidden');
+            uploadBar.style.width = `${percent}%`;
+            uploadText.textContent = `${percent}%`;
+            if (label) uploadLabel.textContent = label;
+        }
+
+        function resetUploadProgress() {
+            uploadWrap.classList.add('hidden');
+            uploadBar.style.width = '0%';
+            uploadText.textContent = '0%';
+            uploadLabel.textContent = 'Uploading file...';
+        }
+
+        function syncMaterialSourceMode() {
+            const hasFile = Boolean(fileInput.files && fileInput.files[0]);
+            if (hasFile) {
+                // Prevent stale typed path from conflicting with selected upload file.
+                linkInput.value = '';
+                linkInput.disabled = true;
+                linkInput.placeholder = 'Using selected upload file...';
+            } else {
+                linkInput.disabled = false;
+                linkInput.placeholder = 'https://example.com/notes.pdf';
+            }
+        }
+
+        async function uploadFileWithProgress(file) {
+            return new Promise((resolve, reject) => {
+                const uploadFd = new FormData();
+                uploadFd.append('file', file);
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/api/materials/upload');
+                xhr.responseType = 'json';
+
+                xhr.upload.onprogress = (event) => {
+                    if (!event.lengthComputable) {
+                        setUploadProgress(35, 'Uploading file...');
+                        return;
+                    }
+                    setUploadProgress(Math.round((event.loaded / event.total) * 100), 'Uploading file...');
+                };
+
+                xhr.onload = () => {
+                    const payload = xhr.response || {};
+                    if (xhr.status >= 200 && xhr.status < 300 && payload.status === 'success') {
+                        setUploadProgress(100, 'Upload complete');
+                        resolve(payload);
+                        return;
+                    }
+                    reject(new Error(payload.error || 'Upload failed.'));
+                };
+
+                xhr.onerror = () => reject(new Error('Upload failed.'));
+                xhr.send(uploadFd);
+            });
+        }
+
+        async function loadBatchOptions() {
+            let batches = [];
+            try {
+                batches = await fetchJsonOrThrow('/api/batches', {}, 'Could not load batches.');
+            } catch (_error) {
+                batches = [];
+            }
+            if ((!Array.isArray(batches) || batches.length === 0)) {
+                try {
+                    batches = await fetchJsonOrThrow('/api/public/batches', {}, 'Could not load public batches.');
+                } catch (_error) {
+                    batches = [];
+                }
+            }
+
+            bSelect.innerHTML = '<option value="">Select batch...</option>';
+            (Array.isArray(batches) ? batches : []).forEach((b) => {
+                const opt = document.createElement('option');
+                opt.value = b.id;
+                opt.textContent = b.name;
+                bSelect.appendChild(opt);
+            });
+
+            if (!batches.length) {
+                setMaterialsStatus('No batches found yet. Create a batch first.', true);
+            }
+        }
+
+        async function init() {
+            try {
+                setMaterialsStatus('Loading batches and saved materials...');
+                await loadBatchOptions();
+                await loadMaterials();
+                if (bSelect.options.length > 1) {
+                    setMaterialsStatus('Ready');
+                }
+            } catch (error) {
+                console.error(error);
+                setMaterialsStatus('Could not load materials workspace.', true);
+            }
+        }
+
+        async function loadMaterials() {
+            const payload = await fetchJsonOrThrow('/api/materials', { cache: 'no-store' }, 'Could not load materials.');
+            const materials = Array.isArray(payload?.materials) ? payload.materials : [];
+            mList.innerHTML = materials.map((m) => `
+                <tr class="glow-on-hover">
+                    <td><span class="m-title">${m.title}</span></td>
+                    <td><span class="m-batch">${m.batch_name || 'GLOBAL'}</span></td>
+                    <td class="m-date">${new Date(m.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <div class="material-row-actions">
+                            ${m.access_mode === 'download' ? `<a class="btn-glass sm info" href="${m.download_path}">Open</a>` : ''}
+                            ${m.access_mode === 'view' ? `<a class="btn-glass sm info" href="${m.file_path}" target="_blank" rel="noopener">Open</a>` : ''}
+                            <button class="btn-glass sm danger" onclick="deleteMaterial(${m.id})">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            if (!materials.length) {
+                mList.innerHTML = '<tr><td colspan="4" style="color: var(--text-secondary); text-align:center;">No materials saved yet.</td></tr>';
+            }
+        }
+
+        materialForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const file = fileInput.files[0];
+            const title = document.getElementById('material-title').value.trim();
+            const batchId = bSelect.value;
+            const description = document.getElementById('material-description').value.trim();
+            const typedPath = linkInput.value.trim();
+            let finalFilePath = typedPath;
+
+            try {
+                if (file) {
+                    const upPayload = await uploadFileWithProgress(file);
+                    const uploadedUrl = upPayload?.file?.url || upPayload?.url || '';
+                    if (!uploadedUrl || !String(uploadedUrl).startsWith('/materials/')) {
+                        throw new Error('Upload completed but no server file URL was returned.');
+                    }
+                    finalFilePath = uploadedUrl;
+                }
+
+                if (!title || !batchId) {
+                    alert('Title and batch are required.');
+                    resetUploadProgress();
+                    return;
+                }
+
+                if (!finalFilePath) {
+                    alert('Provide an https link or upload a file.');
+                    resetUploadProgress();
+                    return;
+                }
+
+                if (/^[A-Za-z]:\\/.test(finalFilePath) || finalFilePath.startsWith('\\\\')) {
+                    alert('Local PC path cannot be used here. Please upload the file using "Choose File".');
+                    resetUploadProgress();
+                    return;
+                }
+
+                if (!finalFilePath.startsWith('/materials/') && !/^https?:\/\//i.test(finalFilePath)) {
+                    alert('Only uploaded files or full http/https links are allowed.');
+                    resetUploadProgress();
+                    return;
+                }
+
+                setUploadProgress(file ? 100 : 40, file ? 'Saving material...' : 'Saving material...');
+                const data = {
+                    title,
+                    batch_id: batchId,
+                    description,
+                    file_path: finalFilePath
+                };
+                const payload = await fetchJsonOrThrow('/api/materials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                }, 'Could not save material.');
+                if (payload.status === 'success') {
+                    alert('Material saved.');
+                    setMaterialsStatus('Material saved.');
+                    await loadMaterials();
+                    e.target.reset();
+                    if (fileInput) fileInput.value = '';
+                    syncMaterialSourceMode();
+                    resetUploadProgress();
+                } else {
+                    resetUploadProgress();
+                    alert(payload.error || 'Could not save material.');
+                }
+            } catch (error) {
+                resetUploadProgress();
+                alert(error.message || 'Upload failed.');
+            }
+        };
+
+        window.deleteMaterial = async (id) => {
+            if (!confirm('Delete this material?')) return;
+            const payload = await fetchJsonOrThrow(`/api/materials/${id}`, { method: 'DELETE' }, 'Delete failed.');
+            if (payload.status === 'success') {
+                setMaterialsStatus('Material deleted.');
+                loadMaterials();
+            } else {
+                alert(payload.error || 'Delete failed.');
+            }
+        };
+
+        fileInput.addEventListener('change', syncMaterialSourceMode);
+        linkInput.addEventListener('input', () => {
+            if (linkInput.value.trim() && fileInput.value) {
+                fileInput.value = '';
+            }
+            syncMaterialSourceMode();
+        });
+
+        init();
+        syncMaterialSourceMode();
+    </script>
+
+    <style>
+        .material-split { display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px; margin-top: 40px; }
+        .pane { padding: 40px; }
+        .pane-subtitle { color: var(--text-secondary); font-size: 0.92rem; margin-top: 7px; }
+        .m-title { color: #fff; font-weight: 700; font-size: 1rem; }
+        .m-batch { color: #3b82f6; font-weight: 800; font-size: 0.82rem; letter-spacing: 0.8px; text-transform: uppercase; }
+        .m-date { color: var(--text-secondary); font-size: 0.9rem; }
+        .material-row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .full-width { width: 100%; border-radius: 12px; }
+        .progress-wrap { margin: 14px 0 6px; }
+        .progress-meta { display: flex; justify-content: space-between; gap: 12px; color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 8px; }
+        .progress-track { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; border: 1px solid rgba(255,255,255,0.08); }
+        .progress-bar { width: 0%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #60a5fa 0%, #22c55e 100%); transition: width 0.2s ease; }
+        @media (max-width: 1100px) { .material-split { grid-template-columns: 1fr; } }
+        @media (max-width: 800px) {
+            .pane { padding: 18px; }
+            table th, table td { padding: 12px 10px; }
+            .material-split { gap: 18px; margin-top: 18px; }
+        }
+        @media (max-width: 640px) {
+            .pane { padding: 14px; }
+            .pane h3 { font-size: 1.15rem; }
+            .main-content { padding: 10px 10px 20px; }
+            .material-split { gap: 14px; margin-top: 14px; }
+            .material-action { min-width: 100%; }
+            .material-action .btn-glass,
+            .material-action .btn-neon { width: 100%; }
+            .table-wrapper table { min-width: 640px; }
+            .progress-meta { flex-direction: column; align-items: flex-start; gap: 4px; }
+            .progress-wrap { margin-top: 10px; }
+        }
+    </style>
+</body>
+</html>

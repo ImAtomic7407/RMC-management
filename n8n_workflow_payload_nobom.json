@@ -1,0 +1,129 @@
+{
+    "name":  "Attendance SMS Automation",
+    "nodes":  [
+                  {
+                      "id":  "webhook-absentee-trigger",
+                      "name":  "Absentee Webhook",
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2,
+                      "position":  [
+                                       260,
+                                       300
+                                   ],
+                      "parameters":  {
+                                         "httpMethod":  "POST",
+                                         "path":  "absentee-trigger",
+                                         "responseMode":  "onReceived",
+                                         "options":  {
+
+                                                     }
+                                     }
+                  },
+                  {
+                      "id":  "code-normalize-students",
+                      "name":  "Normalize Students",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       520,
+                                       300
+                                   ],
+                      "parameters":  {
+                                         "mode":  "runOnceForAllItems",
+                                         "language":  "javaScript",
+                                         "jsCode":  "const payload = items[0]?.json ?? {};\nconst students = Array.isArray(payload.students) ? payload.students : [];\nconst normalize = (value) =\u003e String(value ?? \u0027\u0027).trim();\n\nreturn students\n  .map((student) =\u003e {\n    const status = normalize(student.Status ?? student.status);\n    if (![\u0027Absent\u0027, \u0027Late\u0027].includes(status)) return null;\n\n    const studentName = normalize(student.Name ?? student.name);\n    const batch = normalize(student.Batch ?? student.batch);\n    const className = normalize(student.Class ?? student.class ?? student.class_name);\n    const sessionDate = normalize(student[\u0027Session Date\u0027] ?? student.session_date ?? student.date);\n    const arrivalTime = normalize(student[\u0027Arrival Time\u0027] ?? student.arrival_time);\n    const guardianPhone = normalize(student[\u0027Guardian Phone\u0027] ?? student.guardian_phone ?? student.parent_phone ?? student[\u0027Father Phone\u0027] ?? student.father_phone);\n    const studentPhone = normalize(student[\u0027Student Phone\u0027] ?? student.student_phone ?? student.phone);\n    const recipientPhone = guardianPhone || studentPhone;\n    const message = normalize(student[\u0027Automated Message\u0027] ?? student.automated_message) || `Dear Parent, ${studentName} was ${status.toLowerCase()} for ${className}${batch ? ` (${batch})` : \u0027\u0027} on ${sessionDate}${arrivalTime ? ` and arrived at ${arrivalTime}` : \u0027\u0027}. Please note this for your records.`;\n\n    return {\n      json: {\n        student_name: studentName,\n        batch,\n        class_name: className,\n        session_date: sessionDate,\n        status,\n        arrival_time: arrivalTime,\n        recipient_phone: recipientPhone,\n        student_phone: studentPhone,\n        guardian_phone: guardianPhone,\n        message,\n      },\n    };\n  })\n  .filter(Boolean);"
+                                     }
+                  },
+                  {
+                      "id":  "http-send-sms",
+                      "name":  "Send SMS",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  3,
+                      "position":  [
+                                       800,
+                                       300
+                                   ],
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "={{$env.SMS_API_URL}}",
+                                         "authentication":  "none",
+                                         "sendHeaders":  true,
+                                         "specifyHeaders":  "keypair",
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "Authorization",
+                                                                                         "value":  "={{\"Bearer \" + $env.SMS_API_KEY}}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "contentType":  "json",
+                                         "specifyBody":  "keypair",
+                                         "bodyParameters":  {
+                                                                "parameters":  [
+                                                                                   {
+                                                                                       "name":  "to",
+                                                                                       "value":  "={{$json.recipient_phone}}"
+                                                                                   },
+                                                                                   {
+                                                                                       "name":  "message",
+                                                                                       "value":  "={{$json.message}}"
+                                                                                   },
+                                                                                   {
+                                                                                       "name":  "student_name",
+                                                                                       "value":  "={{$json.student_name}}"
+                                                                                   },
+                                                                                   {
+                                                                                       "name":  "batch",
+                                                                                       "value":  "={{$json.batch}}"
+                                                                                   },
+                                                                                   {
+                                                                                       "name":  "class_name",
+                                                                                       "value":  "={{$json.class_name}}"
+                                                                                   },
+                                                                                   {
+                                                                                       "name":  "status",
+                                                                                       "value":  "={{$json.status}}"
+                                                                                   },
+                                                                                   {
+                                                                                       "name":  "session_date",
+                                                                                       "value":  "={{$json.session_date}}"
+                                                                                   },
+                                                                                   {
+                                                                                       "name":  "arrival_time",
+                                                                                       "value":  "={{$json.arrival_time}}"
+                                                                                   }
+                                                                               ]
+                                                            }
+                                     }
+                  }
+              ],
+    "connections":  {
+                        "Absentee Webhook":  {
+                                                 "main":  [
+                                                              {
+                                                                  "node":  "Normalize Students",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ]
+                                             },
+                        "Normalize Students":  {
+                                                   "main":  [
+                                                                {
+                                                                    "node":  "Send SMS",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                               }
+                    },
+    "settings":  {
+
+                 }
+}

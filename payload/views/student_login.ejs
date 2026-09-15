@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMC Student | Portal Login</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+</head>
+<body class="login-page">
+    <div class="vibrant-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+        <div class="blob blob-5"></div>
+    </div>
+
+    <div class="glass-container login-wrapper">
+        <header class="login-header">
+            <div class="avatar-circle">Student</div>
+            <h1>Student Portal</h1>
+            <p>Use UID, Trio credentials, or scan your student ID QR.</p>
+        </header>
+
+        <form id="student-login-form" class="login-form">
+            <div class="input-group">
+                <label>Student UID</label>
+                <input type="text" name="uid" class="input-glass" placeholder="RMC-...">
+            </div>
+
+            <div class="divider"><span>OR TRIO LOGIN</span></div>
+            <div class="input-group">
+                <label>Name</label>
+                <input type="text" name="name" class="input-glass" placeholder="As on ID card">
+            </div>
+            <div class="input-group">
+                <label>Phone</label>
+                <input type="text" name="phone" class="input-glass" placeholder="+91...">
+            </div>
+            <div class="input-group">
+                <label>Father Name</label>
+                <input type="text" name="father_name" class="input-glass" placeholder="As on ID card">
+            </div>
+            <button type="submit" class="btn-neon full-width">Login to Portal</button>
+        </form>
+
+        <div class="divider"><span>OR SCAN STUDENT ID</span></div>
+        <button id="start-scan" class="btn-glass full-width" type="button">Scan Student QR</button>
+        <div id="scan-box" class="scan-box hidden">
+            <video id="scan-video" playsinline autoplay muted></video>
+            <canvas id="scan-canvas" class="hidden"></canvas>
+            <p class="scan-tip">Point camera at student ID card QR.</p>
+        </div>
+
+        <footer class="login-footer" style="display: flex; gap: 10px; justify-content: center;">
+            <a href="/" class="btn-glass">Back to Landing</a>
+            <a href="https://pub-45176c50a4064b7ca3a691ba71c61e97.r2.dev/rmc-mobile.apk?v=1.0.17-20260519" class="btn-glass" style="color: #4f46e5; border-color: rgba(79, 70, 229, 0.3);">Download App</a>
+        </footer>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('student-login-form');
+        loginForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(loginForm);
+            const data = Object.fromEntries(formData);
+            if (!data.uid && (!data.name || !data.phone || !data.father_name)) {
+                alert("Provide UID or full Trio details.");
+                return;
+            }
+
+            const res = await fetch('/api/student/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                window.location.href = result.redirect || '/student/portal';
+            } else {
+                alert(result.error || 'Login failed.');
+            }
+        };
+
+        const startScanBtn = document.getElementById('start-scan');
+        const scanBox = document.getElementById('scan-box');
+        const scanVideo = document.getElementById('scan-video');
+        const scanCanvas = document.getElementById('scan-canvas');
+        const scanCtx = scanCanvas.getContext('2d');
+        let scanStream = null;
+        let scanning = false;
+
+        async function loginWithQr(rawToken) {
+            const res = await fetch('/api/student/login/qr', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: rawToken })
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                window.location.href = result.redirect || '/student/portal';
+                return;
+            }
+            alert(result.error || 'QR login failed.');
+        }
+
+        function stopScan() {
+            scanning = false;
+            if (scanStream) {
+                scanStream.getTracks().forEach((track) => track.stop());
+                scanStream = null;
+            }
+        }
+
+        async function scanTick() {
+            if (!scanning) return;
+            if (scanVideo.readyState === scanVideo.HAVE_ENOUGH_DATA) {
+                scanCanvas.width = scanVideo.videoWidth;
+                scanCanvas.height = scanVideo.videoHeight;
+                scanCtx.drawImage(scanVideo, 0, 0, scanCanvas.width, scanCanvas.height);
+                const imageData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+                if (code?.data) {
+                    stopScan();
+                    await loginWithQr(code.data);
+                    return;
+                }
+            }
+            requestAnimationFrame(scanTick);
+        }
+
+        async function startScan() {
+            try {
+                scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                scanVideo.srcObject = scanStream;
+                scanBox.classList.remove('hidden');
+                scanning = true;
+                requestAnimationFrame(scanTick);
+            } catch (error) {
+                alert('Camera access denied or unavailable.');
+            }
+        }
+
+        startScanBtn.addEventListener('click', async () => {
+            if (scanning) {
+                stopScan();
+                scanBox.classList.add('hidden');
+                startScanBtn.textContent = 'Scan Student QR';
+                return;
+            }
+            await startScan();
+            startScanBtn.textContent = 'Stop Scanner';
+        });
+
+        window.addEventListener('beforeunload', stopScan);
+    </script>
+
+    <style>
+        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow-x: hidden; overflow-y: auto; background: var(--bg-deep); padding: 24px 16px; }
+        .login-wrapper { width: 100%; max-width: 560px; padding: 44px 34px; border-radius: 34px; z-index: 10; border: 1px solid var(--glass-border); margin: 16px 0 28px; }
+        .login-header { text-align: center; margin-bottom: 24px; }
+        .avatar-circle { font-size: 0.95rem; background: rgba(255,255,255,0.05); width: 90px; height: 90px; margin: 0 auto 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--glass-border); color: #fff; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; }
+        .login-header h1 { font-size: 1.9rem; color: #fff; margin-bottom: 8px; }
+        .login-header p { color: var(--text-secondary); font-size: 0.94rem; line-height: 1.5; }
+        .login-form { display: flex; flex-direction: column; gap: 14px; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 0.74rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 1.3px; }
+        .divider { position: relative; text-align: center; margin: 16px 0 10px; }
+        .divider:before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.08); z-index: 1; }
+        .divider span { position: relative; z-index: 2; background: #0f172a; border-radius: 20px; border: 1px solid var(--glass-border); padding: 5px 14px; color: var(--text-secondary); font-size: 0.65rem; font-weight: 800; letter-spacing: 1px; }
+        .scan-box { margin-top: 12px; border-radius: 14px; border: 1px solid var(--glass-border); padding: 10px; background: rgba(15,23,42,0.35); }
+        .scan-box video { width: 100%; border-radius: 10px; background: #020617; aspect-ratio: 4/3; object-fit: cover; }
+        .scan-tip { margin-top: 8px; color: var(--text-secondary); font-size: 0.8rem; text-align: center; }
+        .full-width { width: 100%; border-radius: 12px; margin-top: 4px; }
+        .login-footer { margin-top: 20px; text-align: center; }
+        @media (max-width: 640px) {
+            .login-page { align-items: flex-start; padding: 12px; }
+            .login-wrapper { padding: 24px 16px; border-radius: 18px; margin: 10px 0 18px; }
+            .login-header h1 { font-size: 1.5rem; }
+            .avatar-circle { width: 72px; height: 72px; font-size: 0.86rem; margin-bottom: 10px; }
+            .divider { margin: 14px 0 8px; }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html> <!-- Declares the document type as HTML5 for modern browser rendering. -->
+<html lang="en"> <!-- Sets the language to English for the institutional dashboard. -->
+<head> <!-- Metadata and static resource container for the administrative console. -->
+    <meta charset="UTF-8"> <!-- Standard character encoding for multi-language student names. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures the administrative grid remains touch-friendly on staff tablets. -->
+    <title>RMC | Registration Dashboard</title> <!-- Defines the browser tab title for the master console. -->
+    <link rel="stylesheet" href="/css/index.css"> <!-- Links to the core Alpha Aura dynamic background and glass tokens. -->
+    <link rel="stylesheet" href="/css/dashboard.css"> <!-- Loads specialized grid-layout and stat-bar CSS for the dashboard. -->
+    <link rel="stylesheet" href="/css/id-card.css"> <!-- Loads the 3D flippable card animation engine for record audit. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script> <!-- Imports the library used to convert the HTML student record into a downloadable PNG image. -->
+</head>
+<body class="dashboard-layout"> <!-- Applies the dashboard-themed layout wrapper for the administrative staff. -->
+    <div class="vibrant-bg"> <!-- The 5-blob kinetic mesh container, maintaining design unity with the guest portals. -->
+        <div class="blob blob-1"></div> <!-- Multi-colored animated blob (Amber) for background depth. -->
+        <div class="blob blob-2"></div> <!-- Multi-colored animated blob (Cyan) for background depth. -->
+        <div class="blob blob-3"></div> <!-- Multi-colored animated blob (Deep Blue) for background depth. -->
+        <div class="blob blob-4"></div> <!-- Multi-colored animated blob (Cyan-Vibrant) for background depth. -->
+        <div class="blob blob-5"></div> <!-- Multi-colored animated blob (Blue-Soft) for background depth. -->
+    </div>
+    <main class="dashboard-container"> <!-- Primary structural container for the administrative workspace. -->
+        <header class="dash-header"> <!-- Top-bar container for system branding and administrative actions. -->
+            <div class="brand"> <!-- Institutional branding section. -->
+                <span class="glitch-text" data-text="RMC">RMC</span> <!-- Stylized RMC logo with premium glitch-hover effect. -->
+                <span class="badge">REGISTRATION DASHBOARD</span> <!-- Label identifying the current administrative context. -->
+            </div>
+            <div class="header-sync-status"> <!-- Visual feedback identifying the database's live polling state. -->
+                <span class="sync-dot" id="sync-indicator"></span> <!-- Pulsing indicator confirming the backend mtime sync engine is active. -->
+                <span class="sync-text">REAL-TIME SYNC ACTIVE</span> <!-- Textual status of the dashboard sync heartbeat. -->
+            </div>
+            <div class="header-actions"> <!-- Administrative control cluster for search and navigation. -->
+                <div class="search-container"> <!-- Search bar for high-speed student record localization. -->
+                     <input type="text" id="search-input" placeholder="SEARCH BY NAME / PHONE..." onkeyup="filterGrid()"> <!-- Real-time search field targeting the student record database. -->
+                </div>
+                <div class="nav-links"> <!-- Quick navigation for administrative staff. -->
+                    <a href="/markattendance" class="btn-ghost">SCAN QR</a> <!-- Link to the attendance scanning portal. -->
+                    <a href="/" class="btn-ghost" target="_blank">+ NEW</a> <!-- Link to open a new enrollment session. -->
+                </div>
+            </div>
+        </header>
+        <!-- STATS BAR -->
+        <section class="stats-bar glass-panel" id="stats-container"> <!-- High-level summary of institutional metrics. -->
+            <div class="compact-stat"> <!-- Stat block for total enrollment count. -->
+                <label>TOTAL STUDENTS</label> <!-- Numerical label for current institution size. -->
+                <span id="stat-total">0</span> <!-- Counter populated by the dashboard.js sync engine. -->
+            </div>
+            <div class="stat-divider"></div> <!-- Visual vertical separation between metrics. -->
+            <div class="compact-stat"> <!-- Stat block for the most recent registration event. -->
+                <label>LAST REGISTRATION</label> <!-- Temporal label for latest system activity. -->
+                <span id="stat-last-time">--:--</span> <!-- Timestamp of the newest student addition. -->
+            </div>
+        </section>
+        <!-- NEW INLINE PREVIEW AREA (3D FLIPPABLE) -->
+        <section id="inline-preview-area" class="inline-preview hidden glass-panel"> <!-- Hidden preview card that appears when a student record is clicked. -->
+            <div class="result-header"> <!-- Heading for the record verification session. -->
+                <h3>STUDENT ID PREVIEW (3D)</h3> <!-- Confirms the current 3D visualization context. -->
+                <span class="status-badge">DUAL-SIDE VERIFICATION</span> <!-- Status label indicating flippable card functionality. -->
+            </div>
+            <div class="card-display-box picture-container"> <!-- Dynamic host for the student's identity mockup. -->
+                <!-- 3D Flippable Card UI -->
+                <div class="id-card-scene" id="preview-scene"> <!-- Global 3D scene used for perspective rendering. -->
+                    <div class="id-card-inner" id="flippable-card"> <!-- Inner element that rotates 180 degrees. -->
+                        <!-- FRONT SIDE -->
+                        <div class="id-card-front" id="ui-card-front"> <!-- Target for JS injection of front-side student data. -->
+                            <!-- Populated by JS -->
+                        </div>
+                        <!-- BACK SIDE -->
+                        <div class="id-card-back" id="ui-card-back"> <!-- Target for JS injection of back-side student data. -->
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="inline-actions"> <!-- Control bar for the student record action. -->
+                <button class="btn-action-small" id="btn-flip-card">🔄 FLIP CARD</button> <!-- Action to toggle between front and back ID faces. -->
+                <button class="btn-primary" id="btn-download-img">DOWNLOAD DUAL-ID (PNG)</button> <!-- Master action to capture the ID faces into a single local image. -->
+                <button class="btn-ghost" id="close-preview">DISMISS PREVIEW</button> <!-- Action to close the preview and return to the grid. -->
+            </div>
+        </section>
+        <!-- THE ID CARD GRID -->
+        <section class="id-grid" id="id-grid-container"> <!-- Master host for student record tiles. -->
+            <!-- Mini ID Cards Injected Here --> <!-- The target where dashboard.js injects student data cards. -->
+        </section>
+    </main>
+    <!-- HIDDEN BLUEPRINT BUFFER (LOCKED TO 350px) -->
+    <div id="id-card-render-buffer" class="id-render-buffer"> <!-- Off-screen structural blueprint used for high-fidelity PNG capture. -->
+        <div id="capture-front" class="id-card-pro side-by-side-part"></div> <!-- Blueprint for the front face of the PNG output. -->
+        <div id="capture-back" class="id-card-pro side-by-side-part"></div> <!-- Blueprint for the back face of the PNG output. -->
+    </div>
+    <script src="/js/dashboard.js"></script> <!-- Links to the core dashboard sync engine, search filters, and 3D capture logic. -->
+</body>
+</html>

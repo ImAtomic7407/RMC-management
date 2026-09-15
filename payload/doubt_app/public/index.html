@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Doubt Portal | RMC</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- Auth Overlay -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="glass-card auth-card">
+            <div class="logo" style="margin-bottom: 24px; text-align: center;">Doubt Portal</div>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; text-align: center;">Login with your RMC ID details</p>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <input type="text" id="student_uid" placeholder="Student UID (from ID Card)">
+                <input type="password" id="secure_token" placeholder="Phone Number / Token">
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: -8px;">Enter the phone number registered with RMC</p>
+                <button class="btn btn-primary" onclick="login()" style="justify-content: center;">Login to Portal</button>
+            </div>
+            <p id="auth-error" style="color: var(--accent-red); margin-top: 16px; font-size: 0.9rem; display: none;">Invalid credentials. Try again.</p>
+        </div>
+    </div>
+
+    <!-- Main Portal -->
+    <div id="main-portal" class="app-container" style="display: none;">
+        <header class="header">
+            <div class="logo">Doubt Portal</div>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <span id="student-name" style="color: var(--text-secondary);">Welcome, Student</span>
+                <button class="btn" style="background: rgba(255,255,255,0.05); color: white;" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Upload Section -->
+            <section class="glass-card" style="margin-bottom: 40px;">
+                <h2 style="margin-bottom: 20px; font-size: 1.25rem;">Ask a New Doubt</h2>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <textarea id="question-text" rows="3" placeholder="Describe your doubt here..."></textarea>
+                    
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="file" id="question-file" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
+                        <button class="btn" style="background: rgba(0, 106, 255, 0.1); color: var(--primary);" onclick="document.getElementById('question-file').click()">
+                             Attach Question Photo
+                        </button>
+                        <span id="file-name" style="color: var(--text-secondary); font-size: 0.9rem;">No file chosen</span>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="submitDoubt()">Submit Doubt Question</button>
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <h2 style="margin-bottom: 20px; font-size: 1.25rem;">Your Doubt History</h2>
+            <div id="doubt-list" style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Loaded via JS -->
+                <div class="glass-card" style="text-align: center; color: var(--text-secondary);">
+                    Loading your history...
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

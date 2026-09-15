@@ -1,0 +1,738 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@200;400;700;900&display=swap'); /* Imports the premium font pair: Inter for body clarity and Outfit for bold display impact. */
+:root { /* Global design token definitions for the RMC Zen Floating system. */
+    --bg-zen: #e0f2fe; /* Soft Sky Blue for a professional, premium atmosphere. */
+    --glass-bg: rgba(255, 255, 255, 0.85); /* Slightly more translucent. */
+    --glass-border: rgba(255, 255, 255, 0.5); 
+    --glass-blur: blur(25px); 
+    --zen-primary: #1e293b; /* Deep Slate for better contrast on blue. */
+    --zen-secondary: #3b82f6; /* Institutional Blue. */
+    --zen-accent: #94a3b8; /* Muted slate for subtle accents. */
+    --text-primary: #1A2B1D; /* Deep evergreen for body text. */
+    --text-secondary: #4A5D4E; /* Soft botanical gray for secondary info. */
+    --accent-glow: 0 20px 40px rgba(26, 43, 29, 0.1); /* Soft shadow for floating components. */
+    
+    /* Institutional Vanguard Tokens (Zen Mapped) */
+    --rmc-blue: #4A6D8C;
+    --rmc-accent: #8EAC9D;
+    --rmc-success: #6B8E23;
+    --rmc-warning: #D4A373;
+    --rmc-danger: #BC6C25;
+    --accent-blue: #4A6D8C;
+}
+/* Hyper-Vibrant 5-Blob Mesh/Aura Background */
+.vibrant-bg { /* Peaceful static background for the Zen system. */
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+    overflow: hidden;
+    background: var(--bg-zen);
+}
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.35;
+    background: #E2ECE5; /* Softer aura for zen feel. */
+    animation: zenFloat 30s infinite alternate ease-in-out;
+}
+.blob-1 { top: -15%; left: -10%; width: 70vw; height: 70vw; }
+.blob-2 { bottom: -10%; right: -5%; width: 60vw; height: 60vw; opacity: 0.25; animation-delay: -5s; }
+
+@keyframes aura {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    50% { transform: translate(5% , 5%) scale(1.1) rotate(180deg); }
+    100% { transform: translate(-5%, -5%) scale(1) rotate(360deg); }
+}
+* { margin: 0; padding: 0; box-sizing: border-box; } /* Global reset: Eliminates default padding/margins and ensures consistent width calculations. */
+body { /* The master container for the RMC web experience. */
+    background: var(--bg-zen);
+    color: var(--text-primary); /* Sets the primary typography color globally. */
+    font-family: 'Inter', sans-serif; /* Sets the default font to the legibility-focused Inter family. */
+    min-height: 100vh; /* Ensures the body always fills the entire screen height. */
+    overflow-x: hidden; /* Prevents unwanted horizontal scrolling from animated background blobs. */
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-tap-highlight-color: transparent;
+}
+/* Glassmorphism Containers */
+.glass-container { /* The core structural UI block for premium, transluscent cards. */
+    position: relative; /* Anchor for pseudo-element 'shimmer' animations. */
+    background: var(--glass-bg); /* Semi-transparent blue-gray base color. */
+    -webkit-backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 40px; /* Extreme border radius for Zen feel. */
+    box-shadow: 0 30px 60px rgba(26, 43, 29, 0.12); /* Deep, soft shadow for floating effect. */
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                box-shadow 0.4s ease, 
+                border-color 0.4s ease;
+    overflow: hidden;
+}
+.glass-container::after { /* Shimmer overlay for a premium, dynamic surface reflection. */
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(
+        to right,
+        transparent,
+        rgba(255, 255, 255, 0.05),
+        transparent
+    );
+    transform: skewX(-25deg);
+    transition: 0.75s;
+    pointer-events: none;
+}
+
+.glass-container:hover::after {
+    left: 150%;
+}
+.glass-container:hover {
+    transform: translateY(-8px) scale(1.005);
+    border-color: var(--glass-border);
+    box-shadow: 0 45px 80px rgba(26, 43, 29, 0.18);
+}
+.glow-on-hover:hover {
+    border-color: var(--zen-accent);
+    box-shadow: 0 25px 50px rgba(26, 43, 29, 0.12);
+    transform: translateY(-4px);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow 0.3s ease, 
+                border-color 0.3s ease;
+}
+/* Typography */
+h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; } /* Applies the display font to all headings with tight character spacing for a modern look. */
+/* Dashboard Layout */
+.dashboard-layout { /* The master layout wrapper for the administrative staff interface. */
+    display: flex; /* Enables a horizontal flex-flow between the sidebar and main content area. */
+    min-height: 100vh; /* Ensures the dashboard always occupies the full screen height. */
+}
+.sidebar { /* The persistent navigation hub for the RMC staff terminal. */
+    width: 280px; /* Fixed width for the primary administrative navigation column. */
+    background: rgba(255, 255, 255, 0.8);
+    -webkit-backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border-right: 1px solid var(--glass-border);
+    padding: 40px 24px;
+    position: fixed;
+    height: 100vh;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+.main-content { /* The primary workspace area where data tables and forms are rendered. */
+    flex: 1; /* Instructs the content area to consume all remaining horizontal space. */
+    margin-left: 280px; /* Compensates for the fixed sidebar width to prevent content overlap. */
+    padding: 60px 40px;
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Glass Inputs */
+.input-glass { /* Standardized text input field for the Zen design system. */
+    width: 100%; /* Ensures the input expands to fill its parent container. */
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none;
+    box-shadow: inset 0 2px 4px rgba(26, 43, 29, 0.04);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.input-glass:focus { /* High-vibrancy state for an active input field. */
+    border-color: var(--zen-secondary);
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 20px rgba(26, 43, 29, 0.05), inset 0 2px 4px rgba(26, 43, 29, 0.04);
+    transform: translateY(-1px);
+}
+/* Neon Buttons */
+.btn-neon { /* The primary 'Call to Action' button for the RMC system. */
+    padding: 16px 32px;
+    background: var(--zen-secondary);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                box-shadow 0.3s ease, 
+                filter 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: 0 10px 25px rgba(26, 43, 29, 0.15);
+}
+
+.btn-neon:hover {
+    transform: translateY(-3px) scale(1.02);
+    filter: brightness(1.2);
+    box-shadow: 0 15px 35px rgba(26, 43, 29, 0.25);
+}
+
+.btn-glass { /* Secondary button style for the Zen system. */
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--glass-border);
+    color: var(--zen-primary);
+    padding: 14px 28px;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-glass:hover {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: var(--zen-accent);
+    transform: translateY(-2px);
+}
+
+/* Administrative Action Colors */
+.btn-glass.info { border-color: rgba(59, 130, 246, 0.5); color: #60a5fa; }
+.btn-glass.info:hover { background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+
+.btn-glass.danger { border-color: rgba(239, 68, 68, 0.5); color: #f87171; }
+.btn-glass.danger:hover { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+
+.btn-neon.danger { background: var(--rmc-danger); box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+.btn-neon.danger:hover { background: #dc2626; box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); }
+
+/* Stat Cards */
+.stat-card { /* Administrative dashboard component for displaying key institutional metrics. */
+    padding: 30px; /* Generous internal breathing room for data presentation. */
+    text-align: center; /* Centers the value and label vertically. */
+}
+
+.stat-val { font-size: 2.5rem; font-weight: 900; color: var(--accent-blue); display: block; } /* High-impact display for numerical data. */
+.stat-label { font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; } /* Muted labeling for statistical context. */
+
+/* 3D Flippable ID Card */
+.id-card-scene { width: 350px; height: 500px; perspective: 1000px; margin: 40px auto; } /* Host container defining the 3D viewing distance for card rotation. */
+.id-card-3d { /* The core flippable element using the CSS 3D engine. */
+    position: relative; width: 100%; height: 100%; cursor: pointer; /* Allows for absolute positioning of front/back faces. */
+    transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Essential for rendering 3D depth and smooth 'bouncy' flips. */
+}
+.id-card-3d.flipped { transform: rotateY(180deg); } /* State class that triggers the 180-degree turn to reveal the back-face. */
+
+.card-face { /* Shared properties for the front and back faces of the digital ID. */
+    position: absolute; width:100%; height:100%; backface-visibility: hidden; /* Pins faces to the scene and hides the 'reverse' side of the plane. */
+    background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); /* Applies standard institution glass styling. */
+    border: 1px solid var(--glass-border); border-radius: 24px; padding: 25px; /* Defines the physical-card aesthetics. */
+    display: flex; flex-direction: column; overflow: hidden; /* Stacks ID card data vertically. */
+}
+.card-back { transform: rotateY(180deg); } /* Pre-rotates the back face so it faces away from the user initially. */
+
+/* Anti-Forgery Watermark */
+.watermark { /* Security feature for digital ID cards to prevent simple screenshot manipulation. */
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); /* Centers and slants the institutional branding. */
+    font-size: 8rem; font-weight: 900; color: rgba(255,255,255,0.02); pointer-events: none; /* Uses hyper-subtle opacity to remain unobtrusive but present. */
+    letter-spacing: 20px; z-index: 0; /* Ensures the watermark stays behind all student data. */
+}
+
+.card-header { position: relative; z-index: 1; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; margin-bottom: 20px; } /* Header section for the RMC institutional identity. */
+.card-org { font-size: 0.7rem; font-weight: 800; color: var(--accent-blue); letter-spacing: 2px; text-transform: uppercase; } /* The official 'RMC Academy' label. */
+.card-title { font-size: 1.2rem; font-weight: 700; color: #fff; } /* The student's academic goal or designation. */
+
+.p-photo { width: 140px; height: 140px; border-radius: 20px; border: 2px solid var(--accent-blue); object-fit: cover; margin: 0 auto 20px; } /* Circular viewport for the student's primary identification photo. */
+.p-name { font-size: 1.5rem; font-weight: 800; text-align: center; color: #fff; margin-bottom: 5px; } /* Prominent student name display. */
+.p-uid { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; text-align: center; color: var(--accent-blue); background: rgba(59,130,246,0.1); padding: 5px; border-radius: 8px; } /* Monospaced UID for machine verification clarity. */
+
+.card-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; } /* Bottom layout for the QR code and issuance meta-data. */
+.qr-mini { width: 70px; height: 70px; border-radius: 10px; background: #fff; padding: 5px; } /* Container for the student's unique verification QR code. */
+
+/* Table Glass */
+.table-container { /* Scrollable container for administrative data grids. */
+    overflow-x: auto; /* Enables horizontal scrolling for dense data sets. */
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow: 0 20px 50px rgba(26, 43, 29, 0.08);
+}
+
+table { width: 100%; border-collapse: collapse; } /* Standard full-width table behavior. */
+th { 
+    padding: 24px 20px;
+    text-align: left;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--glass-border);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 800;
+    background: rgba(255, 255, 255, 0.02);
+}
+td { 
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background-color 0.2s ease;
+}
+tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* Tactical HUB Utility Classes */
+.tactical-hud {
+    position: absolute; inset: 0; pointer-events: none;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 20px;
+}
+.hud-corner {
+    position: absolute; width: 20px; height: 20px;
+    border: 2px solid var(--rmc-blue);
+}
+.hud-tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+.hud-tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+.hud-bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+.hud-br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+.scanning-text {
+    position: absolute; top: 20px; left: 40px;
+    font-size: 0.65rem; font-weight: 800; color: var(--rmc-blue);
+    text-transform: uppercase; letter-spacing: 2px;
+}
+.biometric-pulse {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--rmc-success);
+    margin-right: 8px;
+    display: inline-block;
+    animation: bio-pulse 1.5s infinite;
+}
+@keyframes bio-pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+@keyframes scanline {
+    0% { top: 0; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+.glow-text {
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.hidden { display: none !important; } /* Global Vanguard Utility: Prevents layout flickering and hides elements until activated by JS. */
+
+/* UI Balance Overrides */
+h1 { font-size: clamp(1.7rem, 2vw, 2.25rem); font-weight: 800; line-height: 1.2; }
+h2 { font-size: clamp(1.25rem, 1.4vw, 1.6rem); font-weight: 700; line-height: 1.25; }
+h3 { font-size: clamp(1.05rem, 1.2vw, 1.25rem); font-weight: 700; line-height: 1.3; }
+p { color: var(--text-secondary); font-size: 0.96rem; }
+label { color: #e2e8f0; font-size: 0.84rem; font-weight: 700; letter-spacing: 0.25px; margin-bottom: 8px; display: inline-block; }
+select.input-glass,
+textarea.input-glass,
+input.input-glass { font-size: 0.95rem; line-height: 1.4; }
+
+.content-header { display: flex; gap: 20px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 18px; }
+.h-info p { margin-top: 7px; max-width: 720px; }
+.h-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.btn-neon,
+.btn-glass { font-size: 0.9rem; letter-spacing: 0.2px; text-transform: none; }
+.btn-neon.sm,
+.btn-glass.sm { font-size: 0.82rem; padding: 9px 14px; }
+
+table { font-size: 0.94rem; }
+th { font-size: 0.76rem; letter-spacing: 0.9px; }
+td { font-size: 0.92rem; }
+
+.table-wrapper { width: 100%; overflow: auto; border-radius: 14px; }
+.input-group { margin-bottom: 16px; }
+.mt-20 { margin-top: 20px; }
+.mt-40 { margin-top: 32px; }
+
+.session-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: rgba(15, 23, 42, 0.35);
+}
+
+/* Notifications / Leads */
+.nav-badge{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 18px;
+    padding: 0 7px;
+    margin-left: 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    color: #fff;
+    background: rgba(239,68,68,0.85);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.toast-stack{
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    display: grid;
+    gap: 10px;
+    z-index: 3500;
+    width: min(420px, calc(100vw - 32px));
+    pointer-events: none;
+}
+.toast{
+    pointer-events: auto;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(15,23,42,0.55);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 18px 60px rgba(0,0,0,0.35);
+}
+.toast .t-title{ font-weight: 900; color: #fff; font-size: 0.95rem; }
+.toast .t-body{ margin-top: 6px; color: rgba(255,255,255,0.78); font-size: 0.9rem; line-height: 1.35; }
+.toast .t-row{ margin-top: 10px; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.toast .t-meta{ color: rgba(255,255,255,0.55); font-size: 0.82rem; font-family: monospace; }
+.toast .t-link{ color: var(--accent-blue); text-decoration: none; font-weight: 800; font-size: 0.9rem; }
+
+@media (max-width: 1024px) {
+    .dashboard-layout { display: block; }
+    .main-content {
+        margin-left: 0;
+        padding: 12px 10px 40px;
+        overflow-x: hidden;
+        width: 100%;
+    }
+    .glass-container {
+        border-radius: 22px !important;
+        padding: 16px !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .content-header {
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+    .content-header .h-actions {
+        width: 100%;
+    }
+    .content-header .h-actions > * {
+        flex: 1 1 0;
+        min-width: 140px;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+    .session-badge {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+    .btn-neon,
+    .btn-glass {
+        width: 100%;
+    }
+    .table-wrapper {
+        border-radius: 18px;
+        margin-top: 2px;
+    }
+    .table-wrapper table {
+        min-width: 720px;
+    }
+    .input-group {
+        margin-bottom: 14px;
+    }
+    .nav-link {
+        padding: 12px 14px;
+    }
+}
+
+/* Mobile performance mode: reduce blur/noise/animation load to lower GPU/CPU heat. */
+@media (max-width: 900px) {
+    :root {
+        --glass-blur: blur(8px);
+        --accent-glow: 0 0 14px rgba(59, 130, 246, 0.35);
+    }
+    .vibrant-bg {
+        background: linear-gradient(180deg, #151a2a 0%, #1f1440 45%, #2b1056 100%);
+    }
+    .vibrant-bg::after {
+        display: none;
+    }
+    .blob {
+        display: none;
+    }
+    .glass-container {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.24);
+        border-top-width: 1px;
+        border-left-width: 1px;
+    }
+    .glass-container::after {
+        display: none;
+    }
+    .glass-container:hover,
+    .glow-on-hover:hover {
+        transform: none;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.24);
+    }
+    .toast {
+        backdrop-filter: blur(8px);
+    }
+    .btn-neon,
+    .btn-glass,
+    .input-glass,
+    .nav-link {
+        min-height: 44px;
+    }
+    .glass-container {
+        border-radius: 18px !important;
+        padding: 14px !important;
+    }
+    .stat-card {
+        padding: 22px 18px;
+    }
+    .stat-val {
+        font-size: 2rem;
+    }
+    .content-header {
+        align-items: stretch;
+    }
+    .content-header .h-info,
+    .content-header .h-actions {
+        width: 100%;
+    }
+    .h-actions {
+        flex-direction: column;
+    }
+    .h-actions > * {
+        width: 100%;
+    }
+    .toast-stack {
+        right: 10px;
+        left: 10px;
+        bottom: 10px;
+        width: auto;
+    }
+    th, td {
+        white-space: nowrap;
+    }
+    .table-container,
+    .table-wrapper {
+        -webkit-overflow-scrolling: touch;
+        overflow-x: auto;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .table-wrapper table {
+        min-width: 680px;
+    }
+    .zen-pillars-wrapper {
+        top: 54px;
+        padding: 6px 0 8px;
+        margin-bottom: 18px;
+        max-width: 100vw;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .zen-pillars-scroll-outer {
+        padding: 6px 0;
+    }
+    .zen-pill {
+        padding: 10px 14px;
+        font-size: 0.84rem;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 640px) {
+    .mobile-top-header {
+        padding: 10px 14px;
+    }
+    .mobile-brand .logo-main {
+        font-size: 1.25rem;
+    }
+    .mobile-brand .logo-sub {
+        font-size: 0.58rem;
+        letter-spacing: 0.8px;
+    }
+    .sidebar {
+        width: min(88vw, 320px);
+        left: calc(-1 * min(88vw, 320px));
+        padding: 24px 18px 28px;
+    }
+    .sidebar.sidebar-open {
+        left: 0;
+    }
+    .sidebar-nav {
+        gap: 20px;
+    }
+    .nav-group label {
+        margin-bottom: 8px;
+    }
+    .nav-link {
+        font-size: 0.92rem;
+        margin-bottom: 6px;
+    }
+    .main-content {
+        padding: 10px 10px 32px;
+        max-width: 100vw;
+        box-sizing: border-box;
+    }
+    .glass-container {
+        border-radius: 16px !important;
+        padding: 12px !important;
+        box-sizing: border-box;
+    }
+    .content-header {
+        margin-bottom: 12px;
+    }
+    .content-header .h-info p {
+        max-width: none;
+    }
+    .btn-neon,
+    .btn-glass,
+    .input-glass {
+        border-radius: 18px;
+    }
+    .btn-neon,
+    .btn-glass {
+        padding: 12px 16px;
+    }
+    .input-glass {
+        padding: 14px 16px;
+    }
+    .table-wrapper table {
+        min-width: 620px;
+    }
+    th {
+        padding: 16px 14px;
+        font-size: 0.7rem;
+    }
+    td {
+        padding: 16px 14px;
+    }
+}
+
+/* --- ZEN PILLARS NAVIGATION SYSTEM --- */
+
+.zen-pillars-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    padding: 15px 0;
+    margin-bottom: 25px;
+    background: transparent;
+}
+
+@media (max-width: 1024px) {
+    .zen-pillars-wrapper {
+        top: 60px; /* Lowers the upper tab below the new Mobile Top Header */
+        padding: 5px 0 10px;
+    }
+}
+
+.zen-pillars-scroll-outer {
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+    padding: 10px 5px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.zen-pillars-scroll-outer::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.zen-pillars-list {
+    display: flex;
+    gap: 12px;
+    padding: 0 10px;
+    margin: 0 auto; /* Center if content is smaller than screen */
+}
+
+.zen-pill {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 99px;
+    color: var(--text-secondary);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 8px 20px rgba(26, 43, 29, 0.05);
+    backdrop-filter: blur(15px);
+}
+
+.zen-pill .pill-icon {
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
+.zen-pill.active {
+    background: var(--zen-secondary);
+    color: #fff;
+    border-color: var(--zen-secondary);
+    transform: scale(1.08); /* Selection pop effect */
+    box-shadow: 0 15px 35px rgba(26, 43, 29, 0.2);
+}
+
+.zen-pill:not(.active):hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-4px);
+    border-color: var(--zen-accent);
+    box-shadow: 0 10px 25px rgba(26, 43, 29, 0.1);
+}
+
+/* Zen Section Transitions */
+.zen-section {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.zen-section.hidden {
+    display: none !important;
+    opacity: 0;
+    transform: translateY(15px);
+}
+
+.active-section {
+    animation: zenFadeIn 0.5s ease forwards;
+}
+
+@keyframes zenFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile Adjustments for Pillars */
+@media (max-width: 768px) {
+    .zen-pill {
+        padding: 10px 18px;
+        font-size: 0.88rem;
+    }
+    .zen-pillars-list {
+        margin: 0; /* Align left for scrollability */
+    }
+}

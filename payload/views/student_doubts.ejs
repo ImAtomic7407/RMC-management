@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMC | Ask Doubt</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/id-card.css">
+</head>
+<body class="dashboard-layout">
+    <div class="vibrant-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+        <div class="blob blob-5"></div>
+    </div>
+
+    <%- include('partials/sidebar', { user: student, activePage: 'doubts', zenPortal: true }) %>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div class="h-info">
+                <h1>Ask Doubt</h1>
+                <p>Send a question to your teacher with text or a photo, and track the reply in one place.</p>
+            </div>
+            <div class="h-actions">
+                <a href="/student/portal" class="btn-glass" style="text-decoration:none;">Back to Dashboard</a>
+            </div>
+        </header>
+
+        <section class="dashboard-split" style="grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div class="glass-container" style="padding: 28px;">
+                <div class="section-header">
+                    <h2>New Doubt</h2>
+                    <span class="status-inline" id="doubt-status">Write your question and send it to the teacher.</span>
+                </div>
+
+                <div class="glass-card" style="margin-bottom: 18px;">
+                    <div class="profile-grid" style="grid-template-columns: repeat(2, 1fr); margin: 0;">
+                        <div class="profile-detail"><label>Student</label><span><%= student.name || 'Student' %></span></div>
+                        <div class="profile-detail"><label>UID</label><span><%= student.student_uid || student.uid || '-' %></span></div>
+                        <div class="profile-detail"><label>Batch</label><span><%= student.current_batch || student.batch_name || '-' %></span></div>
+                        <div class="profile-detail"><label>Phone</label><span><%= student.phone || '-' %></span></div>
+                    </div>
+                </div>
+
+                <form id="doubt-form" class="notice-grid" style="padding: 0;">
+                    <div class="input-group" style="grid-column: 1 / -1;">
+                        <label>Your Question</label>
+                        <textarea id="question-text" class="input-glass" rows="6" placeholder="Type your doubt here..."></textarea>
+                    </div>
+                    <div class="glass-card" style="grid-column: 1 / -1; padding: 16px; border: 1px solid rgba(59,130,246,0.18); background: rgba(59,130,246,0.05);">
+                        <div class="section-header" style="margin-bottom: 12px;">
+                            <h3 style="font-size: 1rem;">Question Photo</h3>
+                            <span class="status-inline" id="camera-status">Optional, use the camera or upload an image.</span>
+                        </div>
+                        <div class="camera-shell">
+                            <video id="question-video" class="camera-video hidden" playsinline autoplay muted></video>
+                            <canvas id="question-canvas" class="hidden"></canvas>
+                            <div id="question-preview" class="empty-state" style="min-height: 180px; display:flex; align-items:center; justify-content:center;">No photo captured yet.</div>
+                        </div>
+                        <div class="btn-group" style="margin-top: 12px;">
+                            <button id="btn-open-camera" class="btn-glass" type="button">Take Photo</button>
+                            <button id="btn-capture-photo" class="btn-neon" type="button">Capture</button>
+                            <button id="btn-retake-photo" class="btn-glass" type="button">Retake</button>
+                            <label class="btn-glass" style="display:inline-flex; align-items:center; cursor:pointer;">
+                                Upload Image
+                                <input id="question-image" type="file" accept="image/*" capture="environment" hidden>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="input-group" style="align-self:end;">
+                        <button class="btn-neon" type="submit">Send Doubt</button>
+                    </div>
+                </form>
+
+                <div id="image-preview" class="empty-state hidden" style="margin-top: 16px; padding: 0; border: none; background: transparent;"></div>
+            </div>
+
+            <div class="glass-container" style="padding: 28px;">
+                <div class="section-header">
+                    <h2>My Doubts</h2>
+                </div>
+                <div id="doubt-history" class="item-grid compact-grid" style="gap: 14px;">
+                    <p class="msg">Loading your doubts...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        window.__RMC_DOUBT_CONFIG = {
+            studentUid: <%- JSON.stringify(student.student_uid || student.uid || '') %>,
+            studentName: <%- JSON.stringify(student.name || 'Student') %>
+        };
+    </script>
+    <script src="/js/student_doubts.js"></script>
+
+    <style>
+        .hidden { display: none; }
+        .profile-grid { display: grid; gap: 12px; }
+        .profile-detail { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.02); }
+        .profile-detail label { display: block; color: var(--text-secondary); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+        .profile-detail span { color: #0f172a; font-size: 0.95rem; font-weight: 600; }
+        .camera-shell { display: grid; gap: 12px; }
+        .camera-video { width: 100%; border-radius: 16px; border: 1px solid var(--glass-border); background: #020617; min-height: 220px; object-fit: cover; }
+        .doubt-card { padding: 16px; border-radius: 18px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.02); }
+        .doubt-card h4 { color: #0f172a; margin: 0 0 6px; }
+        .doubt-meta { display: flex; justify-content: space-between; gap: 12px; color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 12px; }
+        .doubt-image { width: 100%; border-radius: 14px; margin-top: 12px; border: 1px solid var(--glass-border); }
+        .doubt-badge { display: inline-flex; padding: 4px 10px; border-radius: 999px; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.7px; text-transform: uppercase; }
+        .doubt-badge.pending { color: #fbbf24; background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.18); }
+        .doubt-badge.solved { color: #4ade80; background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.18); }
+        .doubt-badge.flagged { color: #f87171; background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.18); }
+        @media (max-width: 1024px) { .dashboard-split { grid-template-columns: 1fr !important; } }
+    </style>
+</body>
+</html>

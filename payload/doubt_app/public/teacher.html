@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard | RMC Doubt</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        .teacher-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .sidebar {
+            border-right: 1px solid var(--glass-border);
+            padding: 24px;
+            overflow-y: auto;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+        }
+        .doubt-detail-view {
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .action-bar {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 24px;
+            background: rgba(3, 7, 18, 0.9);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 100;
+        }
+        .btn-check { background: rgba(0, 230, 118, 0.1); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .btn-check:hover { background: var(--accent-green); color: black; box-shadow: 0 0 20px rgba(0, 230, 118, 0.4); }
+        .btn-check:active { background: #00c853; transform: scale(0.96); }
+        
+        .btn-cross { background: rgba(255, 77, 77, 0.1); color: var(--accent-red); border: 1px solid var(--accent-red); }
+        .btn-cross:hover { background: var(--accent-red); color: white; box-shadow: 0 0 20px rgba(255, 77, 77, 0.4); }
+        .btn-cross:active { background: #ff1a1a; transform: scale(0.96); }
+        
+        .question-image-preview {
+            width: 100%;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            cursor: zoom-in;
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Overlay -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="glass-card auth-card">
+            <div class="logo" style="margin-bottom: 24px; text-align: center;">Teacher Portal</div>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="password" placeholder="Password">
+                <button class="btn btn-primary" onclick="login()" style="justify-content: center;">Login to Dashboard</button>
+            </div>
+            <p id="auth-error" style="color: var(--accent-red); margin-top: 16px; font-size: 0.9rem; display: none;">Invalid credentials.</p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="teacher-layout" style="display: none;">
+        <aside class="sidebar">
+            <div class="logo" style="margin-bottom: 32px;">Pending Doubts</div>
+            <div id="pending-list">
+                <!-- Loaded via JS -->
+                <div style="color: var(--text-secondary); text-align: center; padding: 40px 0;">
+                    Fetching doubts...
+                </div>
+            </div>
+        </aside>
+
+        <main id="doubt-viewer" style="position: relative; overflow-y: auto;">
+            <div id="no-selection" style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); flex-direction: column; gap: 16px;">
+                <i class="fas fa-inbox fa-3x" style="opacity: 0.2;"></i>
+                <p>Select a doubt from the sidebar to review</p>
+            </div>
+            
+            <div id="detail-area" class="doubt-detail-view" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--glass-border); padding-bottom: 16px;">
+                    <div>
+                        <h1 id="view-student-id" style="font-size: 1.5rem; margin-bottom: 4px;">Student ID</h1>
+                        <p id="view-timestamp" style="color: var(--text-secondary); font-size: 0.9rem;">Timestamp</p>
+                    </div>
+                    <div id="view-id-badge" style="background: var(--primary); padding: 4px 12px; border-radius: 8px; font-size: 0.8rem;">Doubt #000</div>
+                </div>
+
+                <div class="glass-card">
+                    <p id="view-question-text" style="font-size: 1.1rem; line-height: 1.6;">Question text goes here...</p>
+                </div>
+
+                <div id="view-image-container">
+                    <img id="view-question-image" src="" class="question-image-preview" onclick="window.open(this.src)">
+                    <p style="text-align: center; color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px;">Click image to view full scale</p>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn btn-cross" onclick="updateStatus('flagged')">
+                        <i class="fas fa-times"></i> SEE AGAIN (CROSS)
+                    </button>
+                    <button class="btn btn-check" onclick="updateStatus('solved')">
+                        <i class="fas fa-check"></i> MARK SOLVED (TICK)
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/teacher.js"></script>
+</body>
+</html>

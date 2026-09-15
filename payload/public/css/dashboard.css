@@ -1,0 +1,187 @@
+:root { /* Global design tokens for the administrative dashboard's high-vibrancy nocturnal theme. */
+    --bg: #030712; /* Deep void background for the administrative dashboard (Midnight). */
+    --panel: rgba(17, 24, 39, 0.7); /* Deep glass variant for administrative control panels (Semi-opaque). */
+    --panel-border: rgba(255, 255, 255, 0.08); /* Subtle highlight for glass panel boundaries (Rim-light). */
+    --primary: #3b82f6; /* Core institutional blue for verification branding (Primary Blue). */
+    --primary-glow: rgba(59, 130, 246, 0.5); /* Emissive glow token for active system elements (Neon Glow). */
+    --accent: #22d3ee; /* Cyber-cyan highlight for attention-critical metadata (Tech Cyan). */
+    --text: #f8fafc; /* High-contrast white for staff readability (Off-white). */
+    --text-muted: #94a3b8; /* Slate gray for secondary administrative labels (Muted Steel). */
+    --radius: 1.25rem; /* Standard institutional corner rounding for desktop and tablet consistency. */
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; } /* Universal reset and typography initialization across the dashboard. */
+body.dark-theme { /* Applies the nocturnal theme to the administrative console. */
+    background: var(--bg); /* Applies the deep nocturnal environment background. */
+    color: var(--text); /* Sets the primary text color to high-contrast white. */
+    min-height: 100vh; /* Ensures the dashboard fills the entire screen height. */
+    padding: 2rem; /* Generous viewport gutter for administrative breathing room. */
+    display: flex; /* Enables flexbox for centered dashboard layout. */
+    justify-content: center; /* Horizontally centers the dashboard container. */
+    align-items: flex-start; /* Aligns content to the top for comfortable data reach. */
+}
+.neon-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; } /* Background aura host layer (Fixed position). */
+.neon-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; } /* Kinetic light engines for background atmosphere. */
+.orb-1 { width: 50vw; height: 50vw; background: var(--primary); top: -20%; left: -10%; } /* Northern blue aura for top-left glow. */
+.orb-2 { width: 30vw; height: 30vw; background: var(--accent); bottom: -10%; right: -5%; } /* Southern cyan aura for bottom-right glow. */
+.dashboard-container { width: 100%; max-width: 1400px; display: flex; flex-direction: column; gap: 1.5rem; } /* Global dashboard frame for administrative content. */
+.dash-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; border-bottom: 1px solid var(--panel-border); padding-bottom: 1.5rem; } /* Header alignment for branding and actions. */
+.glitch-text { font-size: 2.5rem; font-weight: 900; letter-spacing: -2px; color: var(--text); } /* Institutional display typography for master branding. */
+.badge { background: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.6rem; font-weight: 800; font-family: 'JetBrains Mono'; margin-left: 10px; } /* Versioning and context badge (Slate-style). */
+.header-sync-status { display: flex; align-items: center; gap: 10px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 20px; border: 1px solid var(--panel-border); } /* Real-time synchronization tracker container. */
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 10px #22c55e; animation: pulse 1.5s infinite; } /* Database heartbeat indicator (Green) with kinetic pulse. */
+.sync-text { font-size: 0.65rem; font-weight: 800; color: #22c55e; letter-spacing: 1px; } /* Connectivity confirmation label for administrative staff. */
+.header-actions { display: flex; align-items: center; gap: 1.5rem; width: 100%; justify-content: flex-end; } /* Action bar alignment for search and portal links. */
+.search-container input { width: 100%; min-width: 250px; max-width: 320px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); padding: 0.75rem 1.5rem; border-radius: 20px; color: #fff; border: 1px solid var(--primary); box-shadow: 0 0 15px var(--primary-glow); } /* Search field styling with neon blue focus. */
+.btn-ghost { background: transparent; border: 1px solid var(--panel-border); color: #fff; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 800; font-size: 0.8rem; background: var(--primary); white-space: nowrap; } /* Ghost-style navigation buttons for administrative portals. */
+/* STATS BAR */
+.stats-bar { /* High-level summary of institutional metrics (Total Students, etc). */
+    display: flex; /* alignment for metric cells. */
+    flex-wrap: wrap; /* enables wrapping on smaller viewports. */
+    justify-content: center; /* centers the metrics bar horizontally. */
+    align-items: center; /* vertically centers the metrics labels and values. */
+    gap: 1.5rem; /* uniform spacing between metric pairs. */
+    padding: 1rem !important; /* internal buffer for the stats bar. */
+    margin: 0 auto; /* centering. */
+    width: 100%; /* Spans the full width of the dashboard. */
+}
+@media (min-width: 768px) { /* Desktop-specific layout for the stats bar. */
+    .stats-bar {
+        gap: 2.5rem; /* Increased spacing for wide-screen viewports. */
+        min-width: 400px; /* minimum width for data density. */
+        width: auto; /* fits to content on larger screens. */
+    }
+}
+.compact-stat { display: flex; flex-direction: column; align-items: center; } /* Stat cell layout for administrative oversight. */
+.compact-stat label { font-size: 0.6rem; font-weight: 800; color: var(--text-muted); letter-spacing: 1.5px; } /* Stat category category (Uppercase tracked type). */
+.compact-stat span { font-size: 1.5rem; font-weight: 900; } /* Stat aggregate value (Bold primary intensity). */
+.stat-divider { width: 1px; height: 25px; background: var(--panel-border); } /* Visual separator between multiple data metrics. */
+.glass-panel { background: var(--panel); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border: 1px solid var(--panel-border); border-radius: var(--radius); padding: 2rem; } /* Reusable high-fidelity glass container. */
+/* THE GRID SYSTEM */
+.id-grid { /* The master grid host for student identification tiles. */
+    display: grid; /* Enables CSS Grid for record management. */
+    grid-template-columns: 1fr; /* Default single column for mobile devices. */
+    gap: 1.5rem; /* Vertical spacing between identity tiles. */
+    margin-top: 1rem; /* Separation from the dashboard header. */
+}
+@media (min-width: 768px) { /* Grid density optimization for institutional staff. */
+    .id-grid {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Optimizes card density for desktop viewports. */
+        gap: 2rem; /* Enhanced spacing for wide-screen desktops. */
+    }
+}
+/* MINI ID TILE STYLING */
+.id-tile { /* Individual interactive student record tile. */
+    position: relative; perspective: 1000px; transition: transform 0.3s; padding: 10px; /* sets the 3D perspective and hover timing. */
+    background: rgba(255,255,255,0.02); border-radius: 25px; border: 1px solid transparent; cursor: pointer; /* transparent glass base. */
+}
+.id-tile:hover { transform: translateY(-5px); border-color: var(--primary); background: rgba(59, 130, 246, 0.05); } /* Interactive hover lift and blue aura highlight. */
+/* MINI ID TILE STYLING - REWORKED */
+.id-card-mini { /* The blueprint for the compact student identity tile. */
+    width: 100%; /* spans the parent tile. */
+    max-width: 330px; /* standard width for identification tiles. */
+    background: #D2DBE8; /* institutional base color for mini-identities (Cloud Gray). */
+    border-radius: 8px; /* sharp commercial corners. */
+    padding: 15px; /* internal buffer for identity metadata. */
+    display: flex; /* alignment for photos and names. */
+    flex-direction: column; /* vertical stacking of identity fields. */
+    gap: 12px; /* uniform separation between record rows. */
+}
+.mini-top { /* branding and portrait container for the mini-tile. */
+    display: flex; /* horizontal alignment of photo and QR. */
+    justify-content: space-between; /* pushes photo and QR to opposite edges. */
+    align-items: center; /* vertically centers assets. */
+}
+.mini-photo { /* small viewing port for the student's portrait. */
+    width: 80px; /* fixed thumbnail width. */
+    height: 80px; /* fixed thumbnail height. */
+    border: 3px solid #5b7ac2; /* institutional blue photo boundary. */
+    background: #aaa; /* placeholder color for missing portraits. */
+    object-fit: cover; /* centers and fills the portrait thumbnail. */
+}
+.mini-qr { /* small viewing port for the student's verification QR. */
+    width: 60px; /* fixed QR width. */
+    height: 60px; /* fixed QR height. */
+    object-fit: contain; /* ensures the QR is never distorted. */
+}
+.mini-info { /* container for student naming and primary metadata. */
+    display: flex; /* stack alignment. */
+    flex-direction: column; /* vertical field stacking. */
+    gap: 2px; /* tight labeling. */
+}
+.mini-name { /* typography for the student's legal name on the tile. */
+    font-size: 1.1rem; /* clear readable scale. */
+    color: #1a3b5c; /* deep institutional text color. */
+    font-weight: 800; /* bold naming emphasis. */
+}
+.mini-meta { /* typography for academic course/batch labeling. */
+    font-size: 0.75rem; /* secondary scale. */
+    color: #5b7ac2; /* institutional blue color for categorical data. */
+    font-weight: 700; /* semi-bold category labeling. */
+}
+.mini-uid { /* typography for the unique alpha-id string. */
+    font-size: 0.7rem; /* compact scale for machine data. */
+    color: #1a3b5c; /* deep institutional text color. */
+    font-weight: 900; /* maximum weighting for unique identifier. */
+    opacity: 0.7; /* subtle opacity for non-critical reading. */
+    margin-top: 5px; /* separation from name fields. */
+}
+/* NEW INLINE PREVIEW STYLING */
+.inline-preview { /* container for the high-fidelity 3D verification result. */
+    width: 100%; /* spans the full dashboard width. */
+    display: flex; /* alignment host for results and buttons. */
+    flex-direction: column; /* vertical stacking of identity result. */
+    align-items: center; /* centers the 3D identity result. */
+    gap: 2rem; /* uniform separation for clarity. */
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); /* Institutional entrance animation for results. */
+    margin-bottom: 2rem; /* separation from the main identification grid. */
+}
+@keyframes slideUp { /* entrance animation for student record verification. */
+    from { transform: translateY(40px); opacity: 0; } /* Start position: Offset and transparent. */
+    to { transform: translateY(0); opacity: 1; } /* End State: Grounded and opaque. */
+}
+.result-header { text-align: center; margin-bottom: 10px; } /* branding for the record verification session. */
+.result-header h3 { font-size: 1.2rem; font-weight: 900; letter-spacing: 2px; color: var(--accent); } /* student identification label confirmation. */
+.card-display-box { /* Visual viewport for the student ID verification mockup. */
+    padding: 1rem; /* internal buffer for the 3D identity card. */
+    background: rgba(255,255,255,0.03); /* subtle high-contrast base. */
+    border-radius: 12px; /* standard institutional rounding. */
+    border: 1px dashed rgba(255,255,255,0.1); /* delineates the preview viewport boundary. */
+    width: 100%; /* expands to fill the preview area. */
+    display: flex; /* centers the child scene. */
+    justify-content: center; /* horizontal centering of 3D card. */
+}
+.picture-container { overflow: hidden; background: transparent; border: none; } /* transparent host for PNG capture mocks. */
+.flat-id-image { /* styling for flattened identity record images. */
+    width: 100%; /* spans the result viewport. */
+    max-width: 350px; /* standard ID width limit. */
+    height: auto; /* preserves aspect ratio of the student record. */
+    border-radius: 12px; /* commercial corner rounding. */
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4); /* high-fidelity shadow for elevation. */
+    animation: fadeIn 0.4s ease-out; /* identity record revelation animation. */
+}
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } } /* subtle entry scaling and opacity ramp. */
+.inline-actions { /* administrative control cluster for student record tasks. */
+    display: flex; /* flexbox host for buttons. */
+    flex-direction: column; /* vertical stack for mobile-first administrative reach. */
+    gap: 1rem; /* uniform separation between record tasks. */
+    width: 100%; /* spans the preview pane. */
+    max-width: 320px; /* constraints for professional data alignment. */
+}
+.btn-primary { /* high-vibrancy action button for record manipulation. */
+    width: 100%; background: #fff; color: #000; border: none; padding: 1.1rem; border-radius: 10px; font-weight: 900; cursor: pointer; transition: 0.3s;
+    letter-spacing: 1px; /* tracked typography for primary administrative actions. */
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,255,255,0.1); } /* Interactive hover feedback indicating target record action. */
+/* RE-LAYOUT FOR ANDROID FOCUS */
+@media (max-width: 768px) { /* Enhances the administrative tablet and mobile terminal experience. */
+    body.dark-theme { padding: 1rem 0.5rem; } /* reduces viewport gutter on ultra-narrow screens. */
+    .dash-header { gap: 1rem; flex-direction: column; align-items: flex-start; } /* stacks header sections for mobile reach. */
+    .header-actions { justify-content: flex-start; } /* aligns actions to the left for standard thumb reach. */
+    .search-container, .search-container input { max-width: 100%; width: 100%; } /* Forces the search field to occupy the full mobile width. */
+    .glitch-text { font-size: 2rem; } /* reduces primary branding scale for mobile devices. */
+    .glass-panel { padding: 1.25rem; } /* compact padding for administrative mobile panes. */
+}
+@keyframes pulse { 0% { opacity: 0.6; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0.6; transform: scale(0.9); } } /* Temporal rhythm for heartbeat and sync indicators. */
+.hidden { display: none !important; } /* Core utility for strict conditional state management. */
+/* SHARED BRAND STYLES (Moved to id-card.css for stability) */
+

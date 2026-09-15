@@ -1,0 +1,14 @@
+node_modules/
+ios/
+android/
+.expo/
+.agent/
+.expo-export-test/
+.expo-export-test2/
+.gradle-user-home/
+.gradle/
+dist/
+build/
+*.tar.gz
+*.zip
+*.apk

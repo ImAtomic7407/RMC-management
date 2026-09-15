@@ -1,0 +1,154 @@
+:root {
+    --bg: #030712; /* Deep baseline void for the staff portal environment. */
+    --panel: rgba(17, 24, 39, 0.7); /* Standard glass variant for staff administration panels. */
+    --panel-border: rgba(255, 255, 255, 0.08); /* Subtle highlight for glass panel outlines. */
+    --primary: #3b82f6; /* Core institutional blue for verification branding. */
+    --primary-glow: rgba(59, 130, 246, 0.5); /* Emissive glow token for active system elements. */
+    --accent: #22d3ee; /* Cyber-cyan highlight for critical student metadata. */
+    --text: #f8fafc; /* High-contrast white for staff readability. */
+    --text-muted: #94a3b8; /* Slate gray for secondary administrative labels. */
+    --radius: 1.25rem; /* Standard institutional corner rounding for all panels. */
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; } /* Universal reset and institutional typography. */
+body.dark-theme {
+    background: var(--bg); /* Applies the deep nocturnal environment. */
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+.neon-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; } /* Aura host layer. */
+.neon-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; } /* Kinetic light engines. */
+.orb-1 { width: 50vw; height: 50vw; background: var(--primary); top: -20%; left: -10%; } /* Northern blue aura. */
+.orb-2 { width: 30vw; height: 30vw; background: var(--accent); bottom: -10%; right: -5%; } /* Southern cyan aura. */
+.dashboard-container { width: 100%; max-width: 1200px; display: flex; flex-direction: column; gap: 2rem; } /* Global staff portal frame. */
+.dash-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; } /* Header alignment. */
+.glitch-text { font-size: 2.5rem; font-weight: 900; letter-spacing: -2px; color: var(--text); } /* Institutional typography. */
+.badge { background: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.6rem; font-weight: 800; } /* Portal version tag. */
+.header-actions { display: flex; gap: 1rem; width: 100%; justify-content: flex-end; } /* Action alignment. */
+.btn-primary { background: #fff; color: #000; border: none; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.btn-ghost { background: transparent; border: 1px solid var(--panel-border); color: #fff; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
+/* STATS GRID */
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; } /* Three-column metric summary. */
+.stat-card { 
+    background: var(--panel); border: 1px solid var(--panel-border); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-radius: var(--radius); padding: 1.5rem;
+    position: relative; overflow: hidden;
+}
+.stat-label { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); letter-spacing: 1px; } /* Metric category name. */
+.stat-card h2 { font-size: 2.5rem; font-weight: 900; margin-top: 5px; } /* Metric aggregate value. */
+.stat-icon { position: absolute; right: 20px; bottom: 20px; font-size: 2.5rem; opacity: 0.1; } /* Subliminal metric icon. */
+.neon-blue h2 { color: var(--primary); } /* blue primary metric. */
+.neon-green h2 { color: #22c55e; } /* Positive status indicator. */
+/* TABLE SECTION */
+.glass-panel { background: var(--panel); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border: 1px solid var(--panel-border); border-radius: var(--radius); padding: 2rem; }
+.table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; } /* Data grid header. */
+.table-header h3 { font-size: 1.2rem; font-weight: 900; letter-spacing: 1px; color: var(--primary); } /* Records title. */
+.search-box { width: auto; max-width: 100%; }
+.search-box input { 
+    width: 350px; max-width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); padding: 0.75rem 1.5rem; border-radius: 20px; color: #fff; outline: none;
+}
+.search-box input:focus { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); } /* Search focus state. */
+.table-wrapper { overflow-x: auto; } /* Ensures horizontal scrolling for narrow staff viewports. */
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th { color: var(--text-muted); font-size: 0.7rem; font-weight: 800; letter-spacing: 1px; padding: 1rem; border-bottom: 1px solid var(--panel-border); } /* Grid header style. */
+td { padding: 1rem; border-bottom: 1px solid var(--panel-border); font-size: 0.9rem; vertical-align: middle; } /* Record cell style. */
+.tr-hover:hover { background: rgba(255,255,255,0.03); } /* Subtle row illumination. */
+/* STUDENT PROFILE INFO */
+.std-info { display: flex; flex-direction: column; } /* Student identity stack. */
+.std-info strong { color: #fff; font-size: 1rem; }
+.std-info .std-phone { font-size: 0.8rem; color: var(--text-muted); }
+.std-class-tag { display: inline-block; padding: 2px 8px; border-radius: 5px; background: rgba(59, 130, 246, 0.2); color: var(--primary); font-size: 0.65rem; font-weight: 800; margin-top: 5px; } /* Batch categorization tag. */
+.std-photo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); } /* Rounded identity preview. */
+.id-status { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 700; color: var(--accent); } /* Trio-Lock security status. */
+.join-date { font-size: 0.75rem; color: var(--text-muted); } /* Enrollment timestamp. */
+.btn-sm-view { background: var(--primary); color: #fff; border: none; padding: 6px 15px; border-radius: 5px; font-size: 0.7rem; font-weight: 800; cursor: pointer; } /* Record inspection trigger. */
+/* REUSE MODAL & 3D CARD CSS FROM REGISTER.CSS */
+.modal { position: fixed; inset: 0; z-index: 1000; display: flex; justify-content: center; align-items: center; } /* Global inspection modal host. */
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.9); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); } /* Deep high-blur obstruction. */
+/* NEW SIMPLE ID CARD (Reference Image Match) */
+.id-card-pro { 
+    width: 320px; 
+    background: #D2DBE8; /* institutional base for printed-grade IDs. */
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.1); 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    color: #1a3b5c;
+    font-family: 'Outfit', sans-serif;
+    transform: none !important;
+    transition: none !important;
+}
+.id-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 25px 15px 25px;
+}
+.id-qr-box {
+    width: 100px;
+    height: 100px;
+}
+.id-qr-box img { width: 100%; height: 100%; object-fit: contain; }
+.id-photo-box {
+    width: 110px; 
+    height: 110px; 
+    border: 5px solid #5b7ac2;
+    background: #aaa;
+}
+.id-photo-box img { width: 100%; height: 100%; object-fit: cover; }
+.id-banner-primary {
+    background: #5b7ac2;
+    padding: 15px 25px;
+    color: white;
+}
+.id-banner-primary h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 4px; font-family: 'Outfit', sans-serif;}
+.id-banner-primary p.role { font-size: 0.95rem; font-weight: 700; color: #1a3b70; margin-top: 2px;}
+.id-banner-primary a { color: #1a3b70; text-decoration: none; }
+.id-info-section {
+    padding: 20px 25px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+.id-info-section p { font-size: 0.9rem; font-weight: 600; color: #1a3b5c; margin:0; display: flex; gap: 8px;}
+.id-info-section p strong { min-width: 75px; color: #0d2b45; font-weight: 800;}
+.id-banner-footer {
+    background: #5b7ac2;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #1a3b5c;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+.id-logo-box {
+    border: 1px dashed #1a3b5c;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+    color: #1a3b5c;
+    letter-spacing: 1px;
+}
+.hidden { display: none !important; } /* Core conditional rendering utility. */
+@media (max-width: 900px) { /* Optimizes the data grid for tablet viewports. */
+    .stats-grid { grid-template-columns: 1fr; }
+    .search-box input { width: 100%; }
+    .table-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .search-box { width: 100%; }
+}
+/* ANDROID / MOBILE FIXES */
+@media (max-width: 768px) { /* Ensures full portal functional on mobile staff devices. */
+    .dash-header { flex-direction: column; text-align: center; }
+    .header-actions { flex-direction: column; width: 100%; }
+    .header-actions > * { width: 100%; text-align: center; }
+    .table-header h3 { align-self: center; text-align: center; width: 100%; }
+    .id-card-pro { width: 100%; max-width: 320px; height: auto; padding-bottom: 2rem; }
+    .card-photo-frame { width: 70px; height: 70px; }
+    body.dark-theme { padding: 1rem; }
+}

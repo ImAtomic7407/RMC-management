@@ -1,0 +1,678 @@
+/* 
+   ==========================================================================
+   RMC PROFESSIONAL DUAL-SIDED ID SYSTEM
+   ==========================================================================
+   This CSS implements a premium 3D flippable ID card with strict layouts
+   for both the digital preview and high-resolution picture generation.
+*/
+:root { /* Global design tokens for the ID card's physical-material simulation. */
+    --id-primary: #1e293b; /* Deep slate for primary branding and headers. */
+    --id-accent: #3b82f6; /* Institutional blue for highlights and fields. */
+    --id-text: #1e293b; /* Primary text color for student data. */
+    --id-bg: #f8fafc; /* Clean ivory background for ID card faces. */
+    --id-card-w: 53.98mm; /* Portrait ID card width (reference layout). */
+    --id-card-h: 85.60mm; /* Portrait ID card height (reference layout). */
+}
+/* 3D SCENE SETTINGS (For Web Preview) */
+.id-card-scene { /* Host container for the 3D perspective environment. */
+    width: var(--id-card-w); /* Sets width based on the ID card token. */
+    height: var(--id-card-h); /* Sets height based on the ID card token. */
+    perspective: 1500px; /* Establishes the 3D depth for the card rotation scene. */
+    margin: 20px auto; /* Centers the 3D scene within the portal viewports. */
+}
+.id-card-inner { /* The flippable container housing both front and back faces. */
+    width: 100%; /* Spans the full width of the parent scene. */
+    height: 100%; /* Spans the full height of the parent scene. */
+    position: relative; /* Anchor for absolute-positioned child faces. */
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Fluid 3D rotation physics with an elastic finish. */
+    transform-style: preserve-3d; /* Required to render child faces in a shared 3D space. */
+    cursor: pointer; /* Indicates that the card can be toggled by the user. */
+}
+.id-card-inner.is-flipped { /* State class triggered by user interaction to reveal the reverse side. */
+    transform: rotateY(180deg); /* Performs a 180-degree flip along the vertical axis. */
+}
+.id-card-front, .id-card-back { /* Shared layout properties for both identity faces. */
+    position: absolute; /* Pins both faces to the exact same starting coordinates. */
+    width: 100%; /* Matches the parent container width. */
+    height: 100%; /* Matches the parent container height. */
+    backface-visibility: hidden; /* Prevents the reverse face from bleeding through during the flip. */
+    border-radius: 3.2mm; /* Realistic card-corner radius for ID-1 format. */
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3); /* High-fidelity shadow to simulate physical card elevation. */
+    overflow: hidden; /* Clips institutional watermarks and photos to the card bounds. */
+    background: var(--id-bg); /* Applies the clean ivory material background. */
+    display: flex; /* Enables flexbox for structured data alignment. */
+    flex-direction: column; /* Stacks ID card sections vertically. */
+    align-items: stretch;
+    justify-content: stretch;
+}
+.id-card-scene .card-face,
+#id-card-render-buffer .card-face { /* Neutralizes the generic glass-card styling from the main UI system. */
+    padding: 0; /* Prevents the shared card shell from squeezing the ID layout. */
+    background: transparent; /* Lets the ID card face define its own surface. */
+    border: none; /* Avoids double borders around the ID card. */
+    border-radius: 3.2mm; /* Keeps the same physical edge geometry as the ID face. */
+    -webkit-backdrop-filter: none; /* Removes unrelated glass blur from Safari. */
+    backdrop-filter: none; /* Removes unrelated glass blur from the enrollment preview. */
+    box-shadow: none; /* Prevents the outer shell from shifting the card visually. */
+}
+.id-card-back { /* Specialized orientation for the reverse face. */
+    transform: rotateY(180deg); /* Pre-rotates the backface to hide it until the flip occurs. */
+}
+/* SHARED BRAND STYLES (Used by both sides and the generator) */
+.id-card-pro { /* The high-fidelity blueprint for institutional student records. */
+    width: var(--id-card-w) !important;
+    height: var(--id-card-h) !important;
+    background: var(--id-bg); /* Clean ivory background for high-contrast legibility. */
+    position: relative; /* Anchor for security watermarks and photo overlays. */
+    overflow: hidden !important;
+    display: flex; /* Flexbox for data row alignment. */
+    flex-direction: column; /* Vertical stacking of identity sections. */
+    color: var(--id-text); /* Sets the primary typography color for the student record. */
+    font-family: 'Outfit', sans-serif; /* High-presence font for institutional identity. */
+    border: 1px solid #becada;
+    border-radius: 3.2mm;
+    box-sizing: border-box !important;
+}
+.id-card-front > .id-card-pro,
+.id-card-back > .id-card-pro {
+    width: 100% !important;
+    height: 100% !important;
+}
+/* THE WATERMARK */
+.id-watermark { /* Institutional security hallmark to prevent forgery. */
+    position: absolute; /* Floats independently behind the primary text layers. */
+    top: 50%; /* Vertical centering anchor. */
+    left: 50%; /* Horizontal centering anchor. */
+    transform: translate(-50%, -50%) rotate(-45deg); /* Centers and slants the institutional hallmark. */
+    font-size: 24mm; /* Scales watermark safely for the new horizontal card format. */
+    font-weight: 900; /* Maximum bold weight for the anti-forgery layer. */
+    color: rgba(0, 0, 0, 0.03); /* Subtle institutional security layer (Semi-transparent). */
+    z-index: 0; /* Ensures the mark stays behind all readable student data. */
+    pointer-events: none; /* Prevents the watermark from interfering with clicks. */
+    -webkit-user-select: none; /* Disables text selection for the security layer. */
+    user-select: none; /* Disables text selection for the security layer. */
+    letter-spacing: 1.2mm; /* Enhanced tracking for a professional watermark finish. */
+}
+/* REFINED TARGET DESIGN (Institutional Blue/White) */
+.id-card-pro {
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #1e293b;
+    font-family: 'Outfit', sans-serif;
+    border: 0.1mm solid #cbd5e1;
+    border-radius: 3.2mm;
+    box-shadow: 0 5mm 15mm rgba(0,0,0,0.1);
+}
+
+.id-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2.5mm 3.5mm;
+    border-bottom: 0.2mm solid #d1d5db;
+    background: #f8fafc;
+}
+
+.id-top-brand {
+    font-weight: 800;
+    font-size: 5.5mm;
+    line-height: 1;
+    color: #0f4f90;
+    letter-spacing: 0.1mm;
+}
+
+.id-top-right {
+    text-align: right;
+}
+
+.id-top-right .label {
+    display: block;
+    font-weight: 700;
+    font-size: 2mm;
+    text-transform: uppercase;
+    color: #334155;
+    letter-spacing: 0.2mm;
+    line-height: 1.1;
+}
+
+.id-top-right .year {
+    display: block;
+    font-weight: 900;
+    font-size: 4.2mm;
+    color: #0f4f90;
+    line-height: 1;
+}
+
+.id-main {
+    padding: 3mm 3.5mm 2mm;
+    display: flex;
+    flex-direction: column;
+    gap: 2mm;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.id-center-title {
+    text-align: center;
+    line-height: 1.1;
+}
+
+.id-center-title .rmc {
+    font-size: 6.5mm;
+    color: #c61f36;
+    font-weight: 900;
+    letter-spacing: 0.1mm;
+}
+
+.id-center-title .tagline {
+    font-size: 2.8mm;
+    color: #0f4f90;
+    font-weight: 700;
+}
+
+.id-batch-strip {
+    background: #eef2f7;
+    color: #b91c1c;
+    text-align: center;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15mm;
+    border-radius: 1.2mm;
+    padding: 1.2mm 2mm;
+    font-size: 2.4mm;
+}
+
+.id-visual-row {
+    display: grid;
+    grid-template-columns: 1fr 22mm;
+    gap: 2.5mm;
+    align-items: start;
+    margin-top: 0.5mm;
+}
+
+.id-qr-box,
+.id-photo-box {
+    border: 0.3mm solid #cbd5e1;
+    background: #ffffff;
+    border-radius: 1.6mm;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.id-qr-box {
+    height: 25mm;
+    padding: 1.5mm;
+}
+
+.id-photo-box {
+    height: 25mm;
+    padding: 0;
+}
+
+.id-qr {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.id-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #e2e8f0;
+}
+
+.id-student-info {
+    margin-top: 1mm;
+    text-align: center;
+}
+
+.id-student-name {
+    font-size: 5mm;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1.1;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.id-student-uid {
+    margin-top: 1mm;
+    font-size: 3mm;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.id-student-meta {
+    margin-top: 1mm;
+    font-size: 2.2mm;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1.3;
+}
+
+.id-student-submeta {
+    margin-top: 1mm;
+    font-size: 1.8mm;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.15mm;
+    font-weight: 700;
+}
+
+.id-footer {
+    background: #0f4f90;
+    color: #ffffff;
+    text-align: center;
+    padding: 1.5mm 2mm 2mm;
+    border-top: 0.3mm solid #0b3a68;
+}
+
+.id-footer .line1 {
+    font-size: 4mm;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.2mm;
+}
+
+.id-footer .line2 {
+    margin-top: 0.5mm;
+    font-size: 2mm;
+    font-weight: 700;
+    letter-spacing: 0.2mm;
+    opacity: 0.9;
+}
+
+.id-field {
+    display: flex; /* Enables stacked or row layout. */
+    flex-direction: column; /* Vertical labeling for commercial ID aesthetics. */
+    min-width: 0;
+}
+.id-field-inline label {
+    margin-bottom: 0.3mm;
+}
+.id-field-full {
+    grid-column: 1 / -1;
+}
+.id-field label { /* Metadata identifier label. */
+    font-size: 1.7mm; /* Small high-density labeling. */
+    font-weight: 900; /* Bold weight for field categorization. */
+    color: var(--id-accent); /* Accent color for field identifiers (Blue). */
+    text-transform: uppercase; /* Standard institutional capitalization. */
+    letter-spacing: 0.3mm; /* tracked type for clarity. */
+}
+.id-field span { /* The actual student record data. */
+    font-size: 2.6mm; /* High-readability font size for data values. */
+    font-weight: 600; /* Semi-bold weight for data emphasis. */
+    color: var(--id-primary); /* Primary text color (Slate). */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.id-value-strong {
+    font-size: 2.8mm !important;
+    font-weight: 800 !important;
+    color: #111827 !important;
+}
+.id-value-compact {
+    font-size: 2.1mm !important;
+    line-height: 1.2 !important;
+    white-space: normal !important;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+}
+/* FOOTER */
+.id-footer-strip { /* Bottom branding and security status bar. */
+    background: var(--id-primary); /* Solid slate background for high-fidelity branding. */
+    color: white; /* High-contrast white typography. */
+    padding: 2mm 4mm; /* Symmetrical internal spacing. */
+    display: flex; /* Enables horizontal alignment of footer badges. */
+    justify-content: space-between; /* Pushes brand and status to opposite edges. */
+    align-items: center; /* Vertically centers the footer content. */
+    font-size: 2.2mm; /* compact font size for metadata. */
+    font-weight: 600; /* Semi-bold for readability. */
+    z-index: 1; /* Places the bar on top of all card layers. */
+    margin-top: auto;
+}
+.id-footer-tag { /* Visual border for high-vibrancy security status. */
+    border: 1px solid rgba(255,255,255,0.3); /* Subtle white border for the status badge. */
+    padding: 0.3mm 1.2mm; /* Internal spacing for the badge label. */
+    border-radius: 0.6mm; /* Precise angular corners. */
+}
+
+/* PREMIUM BACK-SIDE BRANDING */
+.id-brand-banner {
+    background: #0f4f90;
+    color: white;
+    padding: 2.5mm;
+    text-align: center;
+    border-bottom: 0.1mm solid rgba(255,255,255,0.1);
+}
+
+.id-brand-title {
+    font-weight: 800;
+    font-size: 3.0mm;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.id-brand-title-sm {
+    font-size: 2.6mm;
+}
+
+.id-brand-tagline {
+    font-size: 1.8mm;
+    opacity: 0.8;
+    margin-top: 0.8mm;
+    font-weight: 600;
+}
+
+.id-field-list {
+    padding: 4.5mm;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3.5mm;
+}
+
+.id-back-fields .id-field {
+    border-bottom: 0.1mm solid #f1f5f9;
+    padding-bottom: 1.5mm;
+}
+
+.id-back-fields .id-field:last-child {
+    border-bottom: none;
+}
+/* RENDER BUFFER & GENERATOR UTILS */
+.id-render-buffer { /* Off-screen destination for clean rasterization during PNG export. */
+    position: absolute; /* Detached from the main document flow. */
+    left: -9999px; /* Off-screen destination for clean rasterization. */
+    background: white; /* solid backing for clean image exports. */
+    padding: 10px; /* margin for the capture viewport. */
+}
+#id-card-render-buffer {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+}
+#id-card-render-buffer .capture-face {
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+}
+#id-card-render-buffer .capture-face .id-card-pro {
+    box-shadow: none;
+}
+.side-by-side-part { /* Layout constraint for the dual-sided image generator. */
+    margin-bottom: 20px; /* Spacing between front and back faces in the final image. */
+    box-shadow: none !important; /* Disables shadows to ensure clean pixel boundaries. */
+    border: 1px solid #e2e8f0 !important; /* Forces visible boundaries in generated images. */
+}
+/* BUTTON STYLING (For Flip) */
+.btn-action-small { /* Portable interactive button for 3D card manipulation. */
+    background: rgba(255,255,255,0.05); /* Transparent glass base. */
+    border: 1px solid rgba(255,255,255,0.1); /* Subtle perimeter border. */
+    color: white; /* High-contrast white text. */
+    padding: 8px 16px; /* Optimized hit-area for administrative actions. */
+    border-radius: 8px; /* Modern rounded corners. */
+    font-size: 0.8rem; /* readable but secondary scale. */
+    font-weight: 600; /* Semi-bold for label clarity. */
+    cursor: pointer; /* Indicates interactivity. */
+    transition: all 0.3s; /* Smooth state transitions. */
+}
+.btn-action-small:hover { /* Hover behavior for card manipulation buttons. */
+    background: var(--id-accent); /* Switches background to institutional blue. */
+    border-color: var(--id-accent); /* matching border color for the active state. */
+}
+
+/* ALLEN-STYLE RMC ID CARD CONCEPT */
+.custom-rmc-id {
+    background: #f8fafc !important;
+    color: #111827 !important;
+    font-family: 'Outfit', 'Inter', sans-serif !important;
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important;
+    overflow: hidden !important;
+    width: var(--id-card-w) !important;
+    height: var(--id-card-h) !important;
+    border: 1.2px solid #becada !important;
+    border-radius: 3.2mm !important;
+    box-sizing: border-box !important;
+}
+
+.rmc-id-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2.4mm 3.3mm 2.1mm !important;
+    border-bottom: 0.2mm solid #bcc8d7;
+    background: #ffffff;
+}
+
+.rmc-id-logo-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #0b4582;
+}
+
+.rmc-emblem {
+    font-size: 26px;
+}
+
+.rmc-logomark strong {
+    font-size: 5.2mm;
+    font-weight: 900;
+    display: block;
+    line-height: 0.9;
+}
+.rmc-logomark span {
+    font-size: 1.8mm;
+    font-weight: 700;
+    letter-spacing: 0.3mm;
+    margin-top: 0.4mm;
+    display: block;
+}
+
+.rmc-id-type {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.type-main {
+    font-size: 2.1mm;
+    font-weight: 800;
+    color: #475569;
+    line-height: 1.1;
+    text-align: right;
+    letter-spacing: 0.2mm;
+    text-transform: uppercase;
+}
+
+.type-year {
+    font-size: 4.8mm;
+    font-weight: 900;
+    color: #0b4582;
+    line-height: 0.95;
+}
+
+.rmc-id-concept {
+    text-align: center;
+    padding: 1.5mm 0 1mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4mm;
+}
+
+.concept-main {
+    font-size: 6mm;
+    color: #d13239;
+    font-weight: 900;
+    line-height: 0.95;
+}
+
+.concept-sub {
+    font-size: 2.6mm;
+    color: #0b4582;
+    font-weight: 800;
+    margin-top: 0;
+}
+
+.rmc-id-batch {
+    background: #e2e8f0;
+    color: #b91c1c;
+    text-align: center;
+    font-weight: 900;
+    font-size: 3mm;
+    letter-spacing: 0.1mm;
+    padding: 0.75mm 0;
+    margin: 0 3.2mm 1.2mm;
+    border-radius: 1.2mm;
+    text-transform: uppercase;
+}
+
+.rmc-id-middle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5mm;
+    align-items: stretch;
+    padding: 0 3.2mm;
+    margin-bottom: 1mm;
+}
+
+.middle-item {
+    border: 1px solid #b7c4d5;
+    border-radius: 1.25mm;
+    background: #f8fafc;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 18.5mm;
+}
+
+.middle-item.qr-zone img {
+    width: 16mm;
+    height: 16mm;
+    object-fit: contain;
+}
+
+.middle-item.photo-zone {
+    min-height: 18.5mm;
+}
+
+.middle-item.photo-zone img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.middle-item.holo-zone {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background: #dcdcdc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #bbb;
+}
+.holo-inner {
+    font-size: 0.55rem;
+    font-weight: 800;
+    color: #888;
+    transform: rotate(-15deg);
+}
+
+.rmc-id-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 3mm;
+    gap: 0.45mm;
+}
+
+.detail-name {
+    font-size: 5mm;
+    font-weight: 900;
+    color: #172036;
+    text-transform: uppercase;
+    margin-top: 0;
+    line-height: 0.96;
+    letter-spacing: 0.1mm;
+}
+
+.detail-uid {
+    font-size: 3mm;
+    font-weight: 900;
+    color: #172036;
+    line-height: 1;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.detail-secondary-row {
+    display: flex;
+    gap: 1.2mm;
+    font-size: 2.6mm;
+    font-weight: 800;
+    color: #1f2937;
+    margin-top: 0;
+    flex-wrap: nowrap;
+    justify-content: center;
+}
+
+.detail-parent {
+    font-size: 2.6mm;
+    font-weight: 800;
+    color: #1f2937;
+    line-height: 1.05;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.detail-address {
+    font-size: 2.1mm;
+    font-weight: 800;
+    color: #64748b;
+    margin-top: 0.2mm;
+    letter-spacing: 0.05mm;
+    text-transform: uppercase;
+}
+
+.rmc-id-footer {
+    margin-top: 0.4mm;
+    color: #5f6e86;
+    text-align: center;
+    padding: 0 0 1.2mm;
+    font-size: 2.6mm;
+    font-weight: 800;
+    letter-spacing: 0.08mm;
+    text-decoration: underline;
+    text-underline-offset: 0.8mm;
+}
+
+.rmc-id-footer-link {
+    background: transparent;
+    border-top: none;
+}

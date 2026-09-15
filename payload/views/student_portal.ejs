@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMC | Student Portal</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/id-card.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-glow: #3b82f6;
+            --surface: rgba(255, 255, 255, 0.7);
+            --surface-hover: rgba(255, 255, 255, 0.9);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #f8fafc;
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+            overflow: hidden;
+        }
+        
+        .animated-bg::before, .animated-bg::after {
+            content: '';
+            position: absolute;
+            background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 15s infinite alternate;
+        }
+        
+        .animated-bg::before {
+            width: 600px;
+            height: 600px;
+            top: -200px;
+            left: -100px;
+        }
+        
+        .animated-bg::after {
+            width: 800px;
+            height: 800px;
+            bottom: -300px;
+            right: -200px;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .portal-layout {
+            display: flex;
+            width: 100%;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                padding-bottom: 80px;
+            }
+        }
+
+        h1, h2, h3, h4 { margin: 0; }
+
+        .header {
+            margin-bottom: 2.5rem;
+            animation: slideDown 0.6s ease;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #1e293b, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+        
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Glass Card Base */
+        .glass-card {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, background 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            background: var(--surface-hover);
+        }
+
+        .id-card-scene {
+            width: var(--id-card-w) !important;
+            height: var(--id-card-h) !important;
+            margin: 0 auto;
+            zoom: 1.4; /* Scale 204px up to ~285px for premium dashboard view */
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .id-card-pro {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .left-col {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 2rem;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .id-card-scene {
+                zoom: 1.25; /* Slightly smaller zoom for very narrow mobile screens */
+            }
+        }
+        /* Lists layout */
+        .content-sections {
+            display: grid;
+            gap: 2rem;
+            grid-template-columns: 1fr;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.6rem;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        /* Items */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 16px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            text-align: left;
+            width: 100%;
+            box-sizing: border-box;
+            color: inherit;
+        }
+
+        button.list-item {
+            font-family: inherit;
+        }
+
+        .list-item:hover {
+            background: white;
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .item-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            width: calc(100% - 30px);
+        }
+
+        .item-meta {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #3b82f6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .item-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1e293b;
+        }
+
+        .item-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        /* Buttons */
+        .btn-action {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .btn-action:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+        
+        .btn-action:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 16px;
+            border: 2px dashed rgba(148, 163, 184, 0.3);
+            color: var(--text-muted);
+        }
+
+        .empty-state.warning {
+            border-color: rgba(245, 158, 11, 0.3);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        /* Notice Modal (Simple) */
+        #notice-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #notice-modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        #notice-modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-close {
+            background: #f1f5f9;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            color: #64748b;
+            font-size: 1.2rem;
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        
+        .modal-meta {
+            font-weight: 800;
+            font-size: 0.8rem;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+        
+        .modal-body {
+            color: #334155;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        /* Progress Bar for Downloads */
+        .progress-bar-container {
+            width: 100px;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            overflow: hidden;
+            display: none;
+            margin-top: 8px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #3b82f6;
+            width: 0%;
+            transition: width 0.2s;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    <%- include('partials/sidebar', { user: student, activePage: 'portal', zenPortal: true }) %>
+    
+    <div class="portal-layout">
+        <main class="main-content">
+            <div class="header">
+                <h1>Welcome, <%= (student.name || 'Student').split(' ')[0] %></h1>
+                <p>Everything you need for your classes in one simple place.</p>
+            </div>
+
+            <div class="dashboard-grid">
+                
+                <!-- Left Column: ID Card -->
+                <div class="left-col">
+                    <div class="id-card-scene" onclick="this.querySelector('.id-card-inner').classList.toggle('is-flipped')">
+                        <div class="id-card-inner">
+                            <!-- Card Front -->
+                            <div class="id-card-front">
+                                <%- include('partials/id_card_face', { s: student, isFront: true }) %>
+                            </div>
+
+                            <!-- Card Back -->
+                            <div class="id-card-back">
+                                <%- include('partials/id_card_face', { s: student, isFront: false }) %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Materials & Notices -->
+                <div class="right-col content-sections">
+                    
+                    <!-- Notices Section -->
+                    <div class="glass-card">
+                        <div class="section-header">
+                            <h2>Notices</h2>
+                        </div>
+                        <div id="notice-list" class="list-container">
+                            <div class="empty-state">Loading notices...</div>
+                        </div>
+                    </div>
+
+                    <!-- Materials Section -->
+                    <div class="glass-card">
+                        <div class="section-header">
+                            <h2>Study Materials</h2>
+                        </div>
+                        <div id="material-list" class="list-container">
+                            <div class="empty-state">Loading materials...</div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="border: 1px solid rgba(59,130,246,0.18); background: rgba(59,130,246,0.06);">
+                        <div class="section-header">
+                            <h2>Need Help?</h2>
+                        </div>
+                        <p style="color: var(--text-muted); margin-bottom: 16px; line-height: 1.6;">
+                            Ask a doubt directly from your portal and attach a photo if needed. The teacher will review it in the Doubt Portal.
+                        </p>
+                        <a href="/student/doubts" class="btn-neon" style="display:inline-flex; text-decoration:none;">Ask Doubt</a>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notice Detail Modal -->
+    <div id="notice-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeNoticeModal()">✕</button>
+            <span class="modal-meta" id="modal-meta"></span>
+            <h2 class="modal-title" id="modal-title"></h2>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // Utility Functions
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        async function fetchJsonOrThrow(url) {
+            const separator = url.includes('?') ? '&' : '?';
+            const cacheBustUrl = `${url}${separator}_=${Date.now()}`;
+            
+            const response = await fetch(cacheBustUrl, {
+                headers: { Accept: 'application/json' },
+                cache: 'no-store'
+            });
+            
+            const isJson = (response.headers.get('content-type') || '').includes('application/json');
+            const data = isJson ? await response.json() : null;
+
+            if (!response.ok) {
+                throw new Error(data?.error || data?.message || 'Request failed.');
+            }
+            if (!data) throw new Error('Invalid response format.');
+            return data;
+        }
+
+        // --- NOTICES LOGIC ---
+        let noticeCache = [];
+
+        async function loadNotices() {
+            const noticeList = document.getElementById('notice-list');
+            try {
+                const payload = await fetchJsonOrThrow('/api/student/notices');
+                const notices = Array.isArray(payload) ? payload : (payload.notices || []);
+                noticeCache = notices.map((row, index) => ({
+                    ...row,
+                    _local_key: row && row.id ? String(row.id) : `direct-${index}`
+                }));
+                
+                if (!noticeCache.length) {
+                    noticeList.innerHTML = '<div class="empty-state">No announcements for your batch right now.</div>';
+                    return;
+                }
+
+                noticeList.innerHTML = noticeCache.map(n => `
+                    <button class="list-item" onclick="openNoticeDetailSafe('${n._local_key}')">
+                        <div class="item-content">
+                            <span class="item-meta">${escapeHtml(n.target_batch || 'ALL')} • ${new Date(n.created_at).toLocaleDateString()}</span>
+                            <span class="item-title">${escapeHtml(n.title)}</span>
+                            <span class="item-desc">${escapeHtml(String(n.content || '').replace(/<[^>]*>?/gm, '').slice(0, 100))}${String(n.content || '').length > 100 ? '...' : ''}</span>
+                        </div>
+                        <div style="font-weight: 800; color: #cbd5e1;">➔</div>
+                    </button>
+                `).join('');
+            } catch (error) {
+                noticeList.innerHTML = `<div class="empty-state warning">Failed to load notices: ${error.message}</div>`;
+            }
+        }
+
+        async function openNoticeDetail(id) {
+            const modal = document.getElementById('notice-modal');
+            const titleEl = document.getElementById('modal-title');
+            const bodyEl = document.getElementById('modal-body');
+            const metaEl = document.getElementById('modal-meta');
+            
+            titleEl.textContent = "Loading...";
+            bodyEl.innerHTML = "";
+            metaEl.textContent = "";
+            modal.classList.add('show');
+
+            try {
+                const payload = await fetchJsonOrThrow(`/api/student/notices/${id}`);
+                const notice = payload.notice || payload;
+                metaEl.textContent = `${escapeHtml(notice.target_batch || 'ALL')} • ${new Date(notice.created_at).toLocaleString()}`;
+                titleEl.textContent = escapeHtml(notice.title);
+                bodyEl.innerHTML = String(notice.content || '').replace(/\n/g, '<br>');
+            } catch (error) {
+                titleEl.textContent = "Error";
+                bodyEl.textContent = error.message;
+            }
+        }
+
+        function openNoticeDetailSafe(localKey) {
+            const cachedNotice = noticeCache.find((n) => String(n._local_key) === String(localKey));
+            const isDirectOnly = String(localKey).startsWith('direct-') || !cachedNotice?.id;
+            if (!isDirectOnly) {
+                openNoticeDetail(cachedNotice.id);
+                return;
+            }
+
+            const modal = document.getElementById('notice-modal');
+            const titleEl = document.getElementById('modal-title');
+            const bodyEl = document.getElementById('modal-body');
+            const metaEl = document.getElementById('modal-meta');
+            if (!modal || !titleEl || !bodyEl || !metaEl || !cachedNotice) return;
+
+            metaEl.textContent = `${escapeHtml(cachedNotice.target_batch || 'ALL')} - ${cachedNotice.created_at ? new Date(cachedNotice.created_at).toLocaleString() : 'Date unavailable'} - Personal Notice`;
+            titleEl.textContent = escapeHtml(cachedNotice.title || 'Notice');
+            bodyEl.innerHTML = String(cachedNotice.content || '').replace(/\n/g, '<br>');
+            modal.classList.add('show');
+        }
+
+        function closeNoticeModal() {
+            document.getElementById('notice-modal').classList.remove('show');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('notice-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'notice-modal') closeNoticeModal();
+        });
+
+        // --- MATERIALS LOGIC ---
+        async function loadMaterials() {
+            const materialList = document.getElementById('material-list');
+            try {
+                const payload = await fetchJsonOrThrow('/api/student/materials');
+                const materials = Array.isArray(payload) ? payload : (payload.materials || []);
+                
+                if (!materials.length) {
+                    materialList.innerHTML = '<div class="empty-state">No materials assigned to your batch yet.</div>';
+                    return;
+                }
+
+                materialList.innerHTML = materials.map(m => {
+                    const btnLabel = m.access_mode === 'view' ? 'OPEN' : (m.access_mode === 'download' ? 'DOWNLOAD' : 'UNAVAILABLE');
+                    const disabledStr = m.access_mode === 'missing' ? 'disabled' : '';
+                    return `
+                        <div class="list-item" style="cursor: default;">
+                            <div class="item-content">
+                                <span class="item-title">${escapeHtml(m.title)}</span>
+                                <span class="item-desc">${escapeHtml(m.description || 'Reference material')}</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                <button class="btn-action" ${disabledStr} 
+                                    onclick="triggerMaterial('${m.id}', '${m.access_mode}', '${m.download_path || ''}', '${m.file_path || ''}')">
+                                    ${btnLabel}
+                                </button>
+                                <div id="prog-wrap-${m.id}" class="progress-bar-container">
+                                    <div id="prog-bar-${m.id}" class="progress-bar"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                materialList.innerHTML = `<div class="empty-state warning">Failed to load materials: ${error.message}</div>`;
+            }
+        }
+
+        let portalLiveStream = null;
+        function connectPortalLiveStream() {
+            if (portalLiveStream) return;
+            try {
+                portalLiveStream = new EventSource('/api/live/stream');
+                portalLiveStream.onmessage = (event) => {
+                    try {
+                        const payload = JSON.parse(event.data || '{}');
+                        const type = String(payload.type || '');
+                        if (!type || type === 'heartbeat') return;
+                        if (type === 'material_update' || type === 'notice_update' || type === 'student_notice' || type === 'attendance_notice' || type === 'attendance_weekly_report') {
+                            loadNotices().catch(() => null);
+                            loadMaterials().catch(() => null);
+                        }
+                    } catch {
+                        loadNotices().catch(() => null);
+                        loadMaterials().catch(() => null);
+                    }
+                };
+                portalLiveStream.onerror = () => {
+                    if (portalLiveStream) {
+                        portalLiveStream.close();
+                        portalLiveStream = null;
+                    }
+                    window.setTimeout(connectPortalLiveStream, 2000);
+                };
+            } catch {
+                window.setTimeout(connectPortalLiveStream, 2000);
+            }
+        }
+
+        async function triggerMaterial(id, mode, dlUrl, openUrl) {
+            if (mode === 'view' && openUrl) {
+                window.open(openUrl, '_blank', 'noopener');
+                return;
+            }
+            if (mode !== 'download' || !dlUrl) {
+                alert('File not available.');
+                return;
+            }
+
+            const wrap = document.getElementById(`prog-wrap-${id}`);
+            const bar = document.getElementById(`prog-bar-${id}`);
+            if (wrap) wrap.style.display = 'block';
+            if (bar) bar.style.width = '10%';
+
+            try {
+                const res = await fetch(dlUrl);
+                if (!res.ok) throw new Error('Download failed');
+                
+                const disposition = res.headers.get('Content-Disposition') || '';
+                const match = disposition.match(/filename="?([^"]+)"?/i);
+                const fileName = match?.[1] || `material-${id}`;
+
+                let blob;
+                if (!res.body) {
+                    blob = await res.blob();
+                    if (bar) bar.style.width = '100%';
+                } else {
+                    const reader = res.body.getReader();
+                    const contentLength = Number(res.headers.get('Content-Length')) || 0;
+                    const chunks = [];
+                    let received = 0;
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        chunks.push(value);
+                        received += value.length;
+                        if (bar && contentLength > 0) {
+                            bar.style.width = `${Math.round((received / contentLength) * 100)}%`;
+                        }
+                    }
+                    blob = new Blob(chunks);
+                }
+
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(url);
+                
+            } catch (err) {
+                alert('Download error: ' + err.message);
+            } finally {
+                setTimeout(() => {
+                    if (wrap) wrap.style.display = 'none';
+                    if (bar) bar.style.width = '0%';
+                }, 1000);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadNotices();
+            loadMaterials();
+            connectPortalLiveStream();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log*
+.env
+tmp_*.log
+database.db
+rmc_pro_database.db
+rmc_sessions.db

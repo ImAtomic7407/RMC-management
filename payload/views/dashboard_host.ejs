@@ -1,0 +1,685 @@
+<!DOCTYPE html> <!-- Declares the document type as HTML5 for modern browser compliance. -->
+<html lang="en"> <!-- Sets the primary language of the host dashboard to English. -->
+<head> <!-- Metadata and static resource container for global administrative control. -->
+    <meta charset="UTF-8"> <!-- Ensures proper character encoding for worldwide student metadata. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Enables high-fidelity responsiveness for C-level executive oversight. -->
+    <title>RMC | Host Dashboard</title> <!-- Defines the browser tab title for the master control center. -->
+    <link rel="stylesheet" href="/css/index.css"> <!-- Links to the master design system (Vibrant Aura/Mesh CSS). -->
+    <link rel="stylesheet" href="/css/id-card.css"> <!-- Reuses the production ID card renderer inside the host modal. -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Imports the visualization engine for institutional-level analytics. -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script> <!-- Used for PNG export of the current student ID card. -->
+</head>
+<body class="dashboard-layout"> <!-- Applies the specialized layout class for the master administrative environment. -->
+    <div class="vibrant-bg"> <!-- Master container for the 5-blob kinetic mesh animation. -->
+        <div class="blob blob-1"></div> <!-- Multi-colored animated blob (Amber) for background depth. -->
+        <div class="blob blob-2"></div> <!-- Multi-colored animated blob (Cyan) for background depth. -->
+        <div class="blob blob-3"></div> <!-- Multi-colored animated blob (Deep Blue) for background depth. -->
+        <div class="blob blob-4"></div> <!-- Multi-colored animated blob (Cyan-Vibrant) for background depth. -->
+        <div class="blob blob-5"></div> <!-- Multi-colored animated blob (Blue-Soft) for background depth. -->
+    </div>
+    <main class="main-content" style="margin-left: 0;"> <!-- Primary container for the host control modules. -->
+        <header class="content-header"> <!-- Container for the executive branding and global actions. -->
+            <div class="h-info"> <!-- Branding section for the host control center. -->
+                <h1>Host Control Center</h1> <!-- Primary heading identifying the master administrative point. -->
+                <p>Real-time analytics and global student management.</p> <!-- Institutional guidance text for master administrators. -->
+            </div>
+            <div class="h-actions"> <!-- Action area for system-wide student enrollment. -->
+                <button class="btn-neon danger sm" onclick="systemReset()">SYSTEM RESET</button>
+                <button class="btn-neon" onclick="location.href='/register'">+ NEW ENROLLMENT</button> <!-- Master trigger for the institutional enrollment portal. -->
+            </div>
+        </header>
+        <!-- Stats Grid -->
+        <section class="stats-grid"> <!-- Three-column metric summary for executive oversight. -->
+            <div class="glass-container stat-card glow-on-hover"> <!-- Professional container for enrollment totals. -->
+                <span class="stat-icon">👥</span> <!-- Symbolic representation of the student demographic. -->
+                <span id="stat-total" class="stat-val">0</span> <!-- Real-time counter for the total institutional student body. -->
+                <span class="stat-label">Total Enrollment</span> <!-- Metadata describing the enrollment counter. -->
+            </div>
+            <div class="glass-container stat-card glow-on-hover"> <!-- Professional container for attendance visualizations. -->
+                <span class="stat-icon">📊</span> <!-- Symbolic representation of data analytics. -->
+                <div class="chart-container"> <!-- Constraints for the Chart.js analytics rendering. -->
+                    <canvas id="attendance-chart"></canvas> <!-- Canvas target for the institutional attendance visualization. -->
+                </div>
+                <span class="stat-label">Daily Attendance</span> <!-- Metadata describing the analytics module. -->
+            </div>
+            <div class="glass-container stat-card glow-on-hover"> <!-- Professional container for registration velocity. -->
+                <span class="stat-icon">🕘</span> <!-- Symbolic representation of temporal tracking. -->
+                <span id="stat-last-time" class="stat-val">--:--</span> <!-- Timestamp of the most recent student enrollment event. -->
+                <span class="stat-label">Last Registration</span> <!-- Metadata describing the temporal indicator. -->
+            </div>
+        </section>
+        <!-- Tab Navigation -->
+        <nav class="tab-nav mt-20">
+            <button id="tab-crm" class="tab-btn active" onclick="switchTab('crm')">STUDENT REGISTRY</button>
+            <button id="tab-audit" class="tab-btn" onclick="switchTab('audit')">SYSTEM AUDITOR</button>
+            <button id="tab-staff" class="tab-btn" onclick="switchTab('staff')">STAFF IDS</button>
+        </nav>
+
+        <!-- Main CRM Area -->
+        <section id="crm-view" class="crm-section glass-container mt-20"> <!-- Glass container for the global student registry. -->
+            <div class="section-header"> <!-- Header branding for the student data grid. -->
+                <h2>Student Registry (Master Index)</h2> <!-- Title identifying the primary student database view. -->
+                <div class="search-bar"> <!-- Administrative search bridge for quick record localization. -->
+                    <input type="text" id="search-input" class="input-glass" placeholder="Search by UID, Name, or Phone..." onkeyup="filterGrid()"> <!-- High-fidelity search field for record filtering. -->
+                </div>
+            </div>
+            <div class="table-container"> <!-- Ensures horizontal scrolling for complex record tables. -->
+                <table> <!-- Master grid for student identity and batch assignment metadata. -->
+                    <thead> <!-- Column definitions for the CRM grid. -->
+                        <tr>
+                            <th>Student UID</th> <!-- Trio-Lock identifier for the student. -->
+                            <th>Name</th> <!-- Legal name of the student record. -->
+                            <th>Current Batch</th> <!-- Institutional batch categorization. -->
+                            <th>Registration Date</th> <!-- Original enrollment timestamp. -->
+                            <th>Actions</th> <!-- Management triggers for student-level configuration. -->
+                        </tr>
+                    </thead>
+                    <tbody id="student-list"> <!-- Target container for dynamic student record injection. -->
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- System Auditor Area (Phase 3) -->
+        <section id="audit-view" class="crm-section glass-container mt-20 hidden">
+            <div class="section-header">
+                <h2>Vanguard System Auditor</h2>
+                <div class="h-stats-mini">
+                    <span id="audit-db-size" class="badge-glass">DB: 0 KB</span>
+                    <span id="audit-uptime" class="badge-glass">UP: 0h</span>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SQL Table Name</th>
+                            <th>Record Count</th>
+                            <th>Storage Class</th>
+                            <th>Integrity</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-list">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Staff ID Card Creation (Host Only) -->
+        <section id="staff-view" class="crm-section glass-container mt-20 hidden">
+            <div class="section-header">
+                <h2>Create Staff / Teacher ID Card</h2>
+                <div class="h-stats-mini">
+                    <span class="badge-glass">Creates login + QR</span>
+                </div>
+            </div>
+            <div style="padding: 26px;">
+                <form id="host-staff-card-form" class="staff-form-grid">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input class="input-glass" name="full_name" required placeholder="Teacher name">
+                    </div>
+                    <div class="input-group">
+                        <label>Username</label>
+                        <input class="input-glass" name="username" required placeholder="teacher01">
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input class="input-glass" name="password" type="text" required placeholder="Set password">
+                    </div>
+                    <div class="input-group">
+                        <label>Phone</label>
+                        <input class="input-glass" name="phone" placeholder="+91...">
+                    </div>
+                    <div class="input-group">
+                        <label>Role</label>
+                        <select class="input-glass" name="role">
+                            <option value="teacher">Teacher</option>
+                            <option value="staff">Staff</option>
+                        </select>
+                    </div>
+                    <div class="input-group staff-form-actions">
+                        <button class="btn-neon" type="submit">Create Staff Card</button>
+                        <span id="host-staff-card-status" style="color: var(--text-secondary); font-size: 0.9rem;"></span>
+                    </div>
+                </form>
+
+                <div id="host-staff-card-preview" class="hidden" style="margin-top: 18px; border:1px solid var(--glass-border); border-radius: 16px; padding: 14px; background: rgba(255,255,255,0.02);">
+                    <div style="display:flex; gap: 16px; align-items:center; flex-wrap:wrap;">
+                        <img id="host-staff-card-qr" src="" alt="Staff QR" style="width: 140px; height: 140px; border-radius: 10px; background:#fff; padding: 6px;">
+                        <div>
+                        <div id="host-staff-card-name" style="font-size: 1.05rem; color:var(--text-primary); font-weight:800;"></div>
+                            <div id="host-staff-card-user" style="color: var(--text-secondary); margin-top: 4px;"></div>
+                            <div id="host-staff-card-role" style="color: var(--text-secondary); margin-top: 2px;"></div>
+                            <div id="host-staff-card-scan" style="font-family: monospace; font-size: 0.78rem; color: #93c5fd; margin-top: 8px;"></div>
+                            <div style="margin-top: 10px; display:flex; gap: 10px; flex-wrap: wrap;">
+                                <a id="host-staff-card-open-qr" class="btn-glass sm" href="#" target="_blank" rel="noopener" style="text-decoration:none;">Open QR</a>
+                                <a id="host-staff-card-open-scan" class="btn-glass sm info" href="#" target="_blank" rel="noopener" style="text-decoration:none;">Open Scan URL</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- Batch Assignment Modal -->
+    <div id="assign-modal-overlay" class="hidden overlay-glass"> <!-- Full-screen blurred host for assignment configuration. -->
+        <div class="glass-container modal-card manage-modal-card"> <!-- Professional modal for student-to-batch mapping. -->
+            <div class="manage-modal-header">
+                <div>
+                    <h3>Manage Student</h3> <!-- Heading for the assignment management module. -->
+                    <p id="assign-student-name" class="modal-subtitle">...</p> <!-- Contextual subtitle identifying the target student. -->
+                </div>
+                <span class="badge-glass">Current ID Card</span>
+            </div>
+            <div class="manage-modal-grid">
+                <section class="manage-card-panel">
+                    <div id="manage-card-preview" class="manage-card-preview">
+                        <p class="modal-subtitle" style="margin: 0;">Loading current ID card...</p>
+                    </div>
+                </section>
+                <section class="manage-actions-panel">
+                    <h4>Existing Options</h4>
+                    <div id="modal-batch-list" class="batch-grid-select mt-20"> <!-- Grid layout for active batch selector tiles. -->
+                        <!-- Checkboxes -->
+                    </div>
+                    <div class="modal-actions mt-40"> <!-- Container for modal escape actions. -->
+                        <button class="btn-glass" onclick="closeAssignModal()">CANCEL</button> <!-- Trigger to abort assignment configuration. -->
+                        <button class="btn-glass info" onclick="openUpdatePortal()">EDIT STUDENT DATA</button>
+                        <button class="btn-glass" onclick="downloadManagedCurrentCard()">DOWNLOAD ID PNG</button>
+                        <button class="btn-glass danger" onclick="deleteManagedStudent()">DELETE STUDENT</button>
+                        <button class="btn-neon" onclick="saveAssignedBatches()">SAVE CHANGES</button>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    <script>
+        let allStudents = []; // Master client-side cache for student record management.
+        const studentList = document.getElementById('student-list'); // Selects the CRM grid for record injection.
+        const batchSelection = new Set();
+        let selectedStudentName = '';
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function normalizeCardImage(src, fallback) {
+            const value = String(src || '').trim();
+            if (!value) {
+                return fallback;
+            }
+            if (/^https?:\/\//i.test(value) || value.startsWith('/') || value.startsWith('data:')) {
+                return value;
+            }
+            return `/${value.replace(/^\/+/, '')}`;
+        }
+
+        function renderCurrentIdCard(student) {
+            const source = student || {};
+            const batchLabel = escapeHtml(String(source.current_batch || source.batch_name || '-').toUpperCase());
+            const studentName = escapeHtml(String(source.name || source.student_name || 'Student').toUpperCase());
+            const uid = escapeHtml(source.student_uid || source.uid || 'UID-N/A');
+            const phone = escapeHtml(source.phone || '-');
+            const fbcNo = escapeHtml(source.fbc_no || '-');
+            const fatherName = escapeHtml(source.father_name || '-');
+            const guardianPhone = escapeHtml(source.guardian_phone || '-');
+            const studentClass = escapeHtml(source.student_class || '-');
+            const qrUrl = escapeHtml(normalizeCardImage(source.qr_path || source.qr_url, '/img/placeholder-qr.png'));
+            const photoUrl = escapeHtml(normalizeCardImage(source.photo_path || source.photo_url || source.photo, '/img/placeholder-profile.png'));
+
+            return `
+                <div class="id-card-pro custom-rmc-id">
+                    <div class="id-watermark">RMC</div>
+                    <div class="rmc-id-topbar">
+                        <div class="rmc-id-logo-area">
+                            <div class="rmc-logomark">
+                                <strong>RMC</strong>
+                                <span>INSTITUTE</span>
+                            </div>
+                        </div>
+                        <div class="rmc-id-type">
+                            <div class="type-main">IDENTITY<br>CARD</div>
+                            <div class="type-year">2025-26</div>
+                        </div>
+                    </div>
+                    <div class="rmc-id-concept">
+                        <div class="concept-main">RMC</div>
+                        <div class="concept-sub">Concept Se Selection tak</div>
+                    </div>
+                    <div class="rmc-id-batch">${batchLabel}</div>
+                    <div class="rmc-id-middle-grid">
+                        <div class="middle-item qr-zone"><img src="${qrUrl}" alt="QR"></div>
+                        <div class="middle-item photo-zone"><img src="${photoUrl}" alt="Photo"></div>
+                    </div>
+                    <div class="rmc-id-details">
+                        <div class="detail-name">${studentName}</div>
+                        <div class="detail-uid">${uid}</div>
+                        <div class="detail-secondary-row">
+                            <span>FNO: ${phone}</span>
+                            <span>FBC: ${fbcNo}</span>
+                        </div>
+                        <div class="detail-parent">Father's Name: ${fatherName}</div>
+                        <div class="detail-address">Guardian: ${guardianPhone} | Class: ${studentClass}</div>
+                    </div>
+                    <div class="rmc-id-footer rmc-id-footer-link">Show Details -&gt;</div>
+                </div>
+            `;
+        }
+
+        async function downloadManagedCurrentCard() {
+            const previewHost = document.getElementById('manage-card-preview');
+            const card = previewHost?.querySelector('.id-card-pro');
+            if (!card) {
+                alert('Open a student first so the card can be downloaded.');
+                return;
+            }
+            if (typeof html2canvas !== 'function') {
+                alert('Card export is not ready yet. Please refresh and try again.');
+                return;
+            }
+
+            const images = Array.from(card.querySelectorAll('img'));
+            await Promise.all(images.map((img) => {
+                if (img.complete && img.naturalWidth > 0) {
+                    return Promise.resolve();
+                }
+                return new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            }));
+
+            const canvas = await html2canvas(card, {
+                useCORS: true,
+                scale: 3,
+                backgroundColor: '#f8fafc',
+                logging: false
+            });
+
+            const link = document.createElement('a');
+            const safeName = String(selectedStudentName || selectedStudentUID || 'RMC').trim().replace(/[^a-zA-Z0-9_-]+/g, '_') || 'RMC';
+            link.download = `ID_CARD_${safeName}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.crm-section').forEach(s => s.classList.add('hidden'));
+            
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            document.getElementById(`${tab}-view`).classList.remove('hidden');
+
+            if(tab === 'audit') loadAudit();
+        }
+
+        // Host-only staff card creator (lives inside Host Control Center)
+        const hostStaffForm = document.getElementById('host-staff-card-form');
+        if (hostStaffForm) {
+            const status = document.getElementById('host-staff-card-status');
+            const preview = document.getElementById('host-staff-card-preview');
+            const qrImg = document.getElementById('host-staff-card-qr');
+            const nameEl = document.getElementById('host-staff-card-name');
+            const userEl = document.getElementById('host-staff-card-user');
+            const roleEl = document.getElementById('host-staff-card-role');
+            const scanEl = document.getElementById('host-staff-card-scan');
+            const openQr = document.getElementById('host-staff-card-open-qr');
+            const openScan = document.getElementById('host-staff-card-open-scan');
+
+            hostStaffForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                status.textContent = 'Creating...';
+                preview.classList.add('hidden');
+
+                const payload = Object.fromEntries(new FormData(hostStaffForm));
+                const res = await fetch('/api/staff/cards', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+
+                if (!res.ok || result.status !== 'success') {
+                    status.textContent = result.error || 'Could not create staff card.';
+                    return;
+                }
+
+                const staff = result.staff || {};
+                status.textContent = 'Staff card created.';
+                preview.classList.remove('hidden');
+                qrImg.src = staff.qr_path || '';
+                nameEl.textContent = staff.full_name || staff.username || '-';
+                userEl.textContent = `Username: ${staff.username || '-'}`;
+                roleEl.textContent = `Role: ${staff.role || '-'}`;
+                scanEl.textContent = staff.scan_url || '';
+                if (openQr) openQr.href = staff.qr_path || '#';
+                if (openScan) openScan.href = staff.scan_url || '#';
+                hostStaffForm.reset();
+            });
+        }
+
+        async function loadDashboard() { // Master synchronization function for the host console.
+            const res = await fetch('/api/students'); // Retrieves the global student registry from the server.
+            allStudents = await res.json(); // Caches the student dataset for real-time filtering.
+            renderTable(allStudents); // Injects the records into the high-fidelity CRM grid.
+            updateStats(); // Recalculates executive metrics based on current data.
+            initCharts(); // Re-renders the analytics visualizations.
+        }
+
+        async function loadAudit() {
+            const res = await fetch('/api/admin/system_stats');
+            const data = await res.json();
+            if(data.status === 'success') {
+                document.getElementById('audit-db-size').innerText = `DB: ${(data.db_size / 1024).toFixed(1)} KB`;
+                document.getElementById('audit-uptime').innerText = `UP: ${(data.uptime / 3600).toFixed(1)}h`;
+                
+                const list = document.getElementById('audit-list');
+                list.innerHTML = data.tables.map(t => {
+                    const isProtected = ['users', 'students', 'master_student_index', 'batches', 'attendance_sessions', 'attendance_records', 'notifications', 'materials'].includes(t.table) || (t.table.startsWith('batch_') && t.table.endsWith('_students'));
+                    return `
+                    <tr class="glow-on-hover">
+                        <td><span class="uid-tag">${t.table}</span></td>
+                        <td><span class="name-bold">${t.rows} Rows</span></td>
+                        <td><span class="badge-glass">${t.table.startsWith('batch_') ? 'SILO' : 'MASTER'}</span></td>
+                        <td><span class="status-pulse active">SECURE</span></td>
+                        <td>
+                            <div class="action-row">
+                                ${!isProtected ? `
+                                    <button class="btn-glass sm info" onclick="openRenameModal('${t.table}')">MODIFY</button>
+                                    <button class="btn-glass sm danger" onclick="deleteTable('${t.table}')">DELETE</button>
+                                ` : `<span class="badge-glass">${t.table.startsWith('batch_') ? 'USE BATCH MANAGER' : 'PROTECTED'}</span>`}
+                            </div>
+                        </td>
+                    </tr>
+                `}).join('');
+            }
+        }
+
+        async function deleteTable(name) {
+            const confirmName = prompt(`⚠️ VANGUARD SECURITY HANDSHAKE (TRIPLE-LOCK)\n\nThis will PERMANENTLY DROP the ${name} table. All data will be lost.\n\nType the table name "${name}" to confirm:`);
+            if (!confirmName || confirmName.toLowerCase() !== name.toLowerCase()) return alert("AUTH_FAIL: Name mismatch. Operation aborted.");
+
+            const res = await fetch(`/api/admin/tables/${name}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert(data.message);
+                loadAudit();
+            } else {
+                alert("ACCESS_REJECTED: " + (data.error || "Unknown Error"));
+            }
+        }
+
+        async function openRenameModal(name) {
+            const newName = prompt(`RENAME TABLE: ${name}`, name);
+            if (!newName || newName === name) return;
+
+            const res = await fetch(`/api/admin/tables/${name}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ newName })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert(data.message);
+                loadAudit();
+            } else {
+                alert("RENAME_FAIL: " + (data.error || "Unknown Error"));
+            }
+        }
+
+        async function systemReset() {
+            const confirmReset = prompt(`🔴 CRITICAL SYSTEM WIPE REQUESTED\n\nThis will drop ALL batch student tables and clear all materials, records, and metadata. Only staff accounts will remain.\n\nType 'RESET ALL' to confirm:`);
+            if (confirmReset !== 'RESET ALL') return alert("RESET_ABORTED: Handshake failed.");
+
+            try {
+                const res = await fetch('/api/admin/system_reset', { method: 'POST' });
+                const data = await res.json();
+                if (res.ok && data.status === 'success') {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert("RESET_FAILED: " + (data.error || "Unknown Error"));
+                }
+            } catch (error) {
+                alert("RESET_FAILED: " + (error.message || "Network or server error"));
+            }
+        }
+
+        function renderTable(data) { // CRM rendering engine for student record rows.
+            studentList.innerHTML = data.map(s => `
+                <tr class="glow-on-hover">
+                    <td><span class="uid-tag">${s.student_uid}</span></td>
+                    <td><span class="name-bold">${s.name}</span></td>
+                    <td><span class="batch-badge">${s.batch_name}</span></td>
+                    <td>${new Date(s.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn-neon sm" onclick="openAssignModal('${encodeURIComponent(s.student_uid || '')}', '${encodeURIComponent(s.name || '')}', '${encodeURIComponent(s.batch_name || '')}')">MANAGE</button>
+                    </td>
+                </tr>
+            `).join(''); // Maps student metadata to interactive grid rows.
+        }
+        let selectedStudentUID = null; // Stores the UUID of the student currently being managed.
+        async function openAssignModal(uid, name, batchesStr) { // Triggered when the manager clicks 'MANAGE'.
+            selectedStudentUID = decodeURIComponent(uid); // Locks the target student's identifier.
+            selectedStudentName = decodeURIComponent(name);
+            const decodedName = decodeURIComponent(name);
+            const decodedBatches = decodeURIComponent(batchesStr || '');
+            document.getElementById('assign-student-name').innerText = `Managing: ${decodedName}`; // Updates the modal header for clarity.
+            document.getElementById('assign-modal-overlay').classList.remove('hidden'); // Reveals the high-fidelity assignment modal.
+            const previewHost = document.getElementById('manage-card-preview');
+            const studentRecord = allStudents.find((student) => String(student.student_uid || student.uid || '') === String(selectedStudentUID));
+            previewHost.innerHTML = studentRecord
+                ? renderCurrentIdCard(studentRecord)
+                : '<p class="modal-subtitle" style="margin: 0;">Current ID card could not be loaded.</p>';
+            const res = await fetch('/api/batches'); // Retrieves the list of available academic batches.
+            const batches = await res.json(); // Parses the batch catalog.
+            const currentBatches = decodedBatches
+                .split(',')
+                .map(b => b.trim())
+                .filter(Boolean); // Identifies currently assigned student batches.
+            batchSelection.clear();
+            currentBatches.forEach((batchName) => batchSelection.add(batchName));
+            const grid = document.getElementById('modal-batch-list'); // Selects the batch selector grid.
+            grid.innerHTML = batches.map(b => `
+                <label class="glass-checkbox">
+                    <input type="checkbox" class="batch-checkbox" value="${encodeURIComponent(b.name)}" ${currentBatches.includes(b.name) ? 'checked' : ''}>
+                    <span class="chk-tile">${b.name}</span>
+                </label>
+            `).join(''); // Generates interactive tiles for batch assignment.
+
+            grid.querySelectorAll('.batch-checkbox').forEach((checkbox) => {
+                checkbox.addEventListener('change', (event) => {
+                    const batchName = decodeURIComponent(event.target.value);
+                    if (event.target.checked) {
+                        batchSelection.add(batchName);
+                    } else {
+                        batchSelection.delete(batchName);
+                    }
+                });
+            });
+        }
+        async function openUpdatePortal() {
+            if (!selectedStudentUID) {
+                alert('Select a student first.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/students/update-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_uid: selectedStudentUID })
+                });
+                const data = await res.json();
+                if (!res.ok || data.status !== 'success' || !data.update_url) {
+                    alert(data.error || 'Could not open the updating portal.');
+                    return;
+                }
+                window.location.href = data.update_url;
+            } catch (error) {
+                alert(error.message || 'Could not open the updating portal.');
+            }
+        }
+        function closeAssignModal() { // Triggered when assignment management is completed or aborted.
+            document.getElementById('assign-modal-overlay').classList.add('hidden'); // Hides the assignment modal.
+            const previewHost = document.getElementById('manage-card-preview');
+            if (previewHost) {
+                previewHost.innerHTML = '<p class="modal-subtitle" style="margin: 0;">Loading current ID card...</p>';
+            }
+            loadDashboard(); // Refreshes the CRM to reflect new batch mappings.
+            selectedStudentName = '';
+        }
+        async function saveAssignedBatches() {
+            if (!selectedStudentUID) {
+                return;
+            }
+
+            const selectedBatches = Array.from(batchSelection);
+            if (selectedBatches.length === 0) {
+                alert('Select at least one batch for this student.');
+                return;
+            }
+
+            const res = await fetch('/api/batches/assign', { // Dispatches assignment configuration to the server.
+                method: 'POST', // Uses POST for assignment updates.
+                headers: {'Content-Type': 'application/json'}, // Informs the server of the JSON payload format.
+                body: JSON.stringify({ student_uid: selectedStudentUID, batch_names: selectedBatches }) // Serializes the assignment mapping.
+            });
+            const data = await res.json(); // Parses the assignment confirmation.
+            if(data.status === 'success') { // If the student is successfully mapped to the new batch...
+                alert(data.message); // Visual confirmation of the CRM update.
+                closeAssignModal();
+                return;
+            }
+            alert(data.error || 'Could not update student batches.');
+        }
+
+        async function deleteManagedStudent() {
+            if (!selectedStudentUID) {
+                return;
+            }
+            const confirmed = confirm(`Delete student ${selectedStudentUID}? This removes ID card and records from all batches.`);
+            if (!confirmed) {
+                return;
+            }
+
+            const res = await fetch('/api/delete_student', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ student_uid: selectedStudentUID })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert('Student deleted successfully.');
+                closeAssignModal();
+                return;
+            }
+            alert(data.error || 'Could not delete student.');
+        }
+        function updateStats() { // Metric engine for executive oversight cards.
+            document.getElementById('stat-total').innerText = allStudents.length; // Updates the total enrollment counter.
+            if(allStudents.length > 0) { // If student records exist...
+                const last = new Date(allStudents[0].created_at); // Identifies the most recent enrollment timestamp.
+                document.getElementById('stat-last-time').innerText = last.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Updates the velocity indicator.
+            }
+        }
+        function initCharts() { // Visualization engine for institutional analytics.
+            const ctx = document.getElementById('attendance-chart').getContext('2d'); // Selects the drawing context for Chart.js.
+            new Chart(ctx, { // Initializes the global analytics doughnut.
+                type: 'doughnut', // Sets the chart type to doughnut for proportional accuracy.
+                data: {
+                    datasets: [{
+                        data: [75, 25], // Dummy proportional data for aesthetic demonstration.
+                        backgroundColor: ['#3b82f6', 'rgba(255,255,255,0.05)'], // Institutional blue styling.
+                        borderWidth: 0, // Disables borders for a clean glassmorphic look.
+                        cutout: '80%' // Maximizes the hollow center for a professional ring appearance.
+                    }]
+                },
+                options: {
+                    responsive: true, // Enables high-fidelity chart scaling.
+                    maintainAspectRatio: false, // Allows chart to fill the container height.
+                    plugins: { legend: { display: false } } // Disables the legend for a minimalist aesthetic.
+                }
+            });
+        }
+        function filterGrid() { // Real-time searching engine for the CRM student list.
+            const query = document.getElementById('search-input').value.toLowerCase(); // Extracts the search query.
+            const filtered = allStudents.filter(s => 
+                s.name.toLowerCase().includes(query) || 
+                s.student_uid.toLowerCase().includes(query) ||
+                s.batch_name.toLowerCase().includes(query)
+            ); // Filters the student dataset across multiple metadata fields.
+            renderTable(filtered); // Updates the UI with the filtered search results.
+        }
+        loadDashboard(); // Initial synchronization of the host portal with the institutional database.
+    </script>
+    <style>
+        .content-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; } /* executive branding header alignment. */
+        .h-info h1 { font-size: 2.2rem; color: var(--text-primary); margin-bottom: 5px; } /* Institutional typography for the control center. */
+        .h-info p { color: var(--text-secondary); } /* descriptive text for executive oversight. */
+        
+        .tab-nav { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); color: var(--text-secondary); padding: 12px 25px; border-radius: 12px; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.3s; }
+        .tab-btn.active { background: rgba(59,130,246,0.1); border-color: #3b82f6; color: #fff; box-shadow: 0 0 20px rgba(59,130,246,0.2); }
+        .tab-btn:hover { background: rgba(255,255,255,0.05); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; } /* Grid layout for master metrics. */
+        .stat-icon { font-size: 2rem; margin-bottom: 20px; display: block; opacity: 0.5; } /* Subliminal metric icons. */
+        .chart-container { height: 80px; margin: 10px 0; } /* Constraint for the analytics ring. */
+        .section-header { padding: 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); } /* Data grid header branding. */
+        .section-header h2 { font-size: 1.2rem; } /* Grid title typography. */
+        .search-bar { width: 350px; } /* search field constraints. */
+        .h-stats-mini { display: flex; gap: 10px; }
+        .badge-glass { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 5px 12px; border-radius: 6px; font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; }
+        
+        .uid-tag { font-family: monospace; color: #d1d5db; font-weight: 700; font-size: 0.85rem; } /* Trio-Lock identifier styling. */
+        .name-bold { color: var(--text-primary); font-weight: 600; } /* Record name emphasis. */
+        .batch-badge { background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(245, 158, 11, 0.35); color: #fde68a; padding: 5px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; } /* Batch categorization tag styling. */
+        .overlay-glass { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); z-index: 2000; display: flex; align-items: center; justify-content: center; } /* Full-screen modal host. */
+        .modal-card { padding: 40px; width: 100%; max-width: 500px; text-align: center; border-radius: 30px; } /* Assignment modal container styling. */
+        .manage-modal-card { width: min(1280px, 96vw); max-height: 92vh; overflow: auto; text-align: left; }
+        .manage-modal-header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 18px; }
+        .manage-modal-header h3 { margin: 0; color: var(--text-primary); }
+        .manage-modal-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 22px; align-items: start; }
+        .manage-card-panel, .manage-actions-panel { min-width: 0; }
+        .manage-actions-panel h4 { margin: 0; color: var(--text-primary); font-size: 1rem; }
+        .manage-card-preview { display: grid; place-items: center; padding: 14px; border-radius: 24px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.04); }
+        .modal-subtitle { color: var(--text-secondary); margin-top: 10px; } /* Supplemental modal metadata typography. */
+        .batch-grid-select { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; } /* interactive batch tile grid. */
+        .glass-checkbox { cursor: pointer; } /* clickable batch selection surface. */
+        .glass-checkbox input { display: none; } /* removes native browser checkbox UI. */
+        .chk-tile { display: block; padding: 10px; border: 1px solid var(--glass-border); border-radius: 10px; font-size: 0.8rem; color: var(--text-secondary); } /* Custom glass-styled selection tile. */
+        .glass-checkbox input:checked + .chk-tile { background: rgba(245, 158, 11, 0.16); border-color: #f59e0b; color: #fff; } /* active state for selected batch tiles. */
+        button.sm { padding: 6px 15px; font-size: 0.75rem; font-weight: 700; } /* Utility for small CRM triggers. */
+        .hidden { display: none; }
+        .status-pulse { display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 800; color: #10b981; }
+        .status-pulse::before { content: ''; width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+
+        .staff-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+        .staff-form-actions { display:flex; align-items:flex-end; gap: 10px; grid-column: span 2; }
+        @media (max-width: 1100px) {
+            .staff-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .staff-form-actions { grid-column: span 2; }
+        }
+        @media (max-width: 1280px) {
+            .manage-modal-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            .staff-form-grid { grid-template-columns: 1fr; }
+            .staff-form-actions { grid-column: span 1; flex-direction: column; align-items: stretch; }
+            .manage-modal-card { padding: 18px; }
+            .manage-card-preview { padding: 8px; }
+        }
+    </style>
+</body>
+</html>

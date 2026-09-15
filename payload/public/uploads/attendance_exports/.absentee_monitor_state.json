@@ -1,0 +1,187 @@
+{
+  "baseline_initialized": true,
+  "last_attempt_at": "2026-04-13T19:05:09.116525",
+  "last_success_at": "2026-04-13T19:05:09.116620",
+  "sent_row_keys": {
+    "010579873d4fa47928fc122b5df66564c4b3a0e6": {
+      "name": "Nishant",
+      "recipient": "8521507899",
+      "sent_at": "2026-04-12T16:44:31.620059",
+      "status": "Absent"
+    },
+    "0a4bb1a2e26ac95e025cc7a27153fd09a7e3d7cd": {
+      "name": "Shailesh ranjan",
+      "recipient": "9534500143",
+      "sent_at": "2026-04-13T19:05:05.220949",
+      "status": "Absent"
+    },
+    "0bf4147a2716d936d1621b81c1cf6bccfb428d33": {
+      "name": "Ankit Raj",
+      "recipient": "6299505418",
+      "sent_at": "2026-04-13T19:04:48.030276",
+      "status": "Absent"
+    },
+    "285887fed179e96d837e3e888ba6bf4ca1eab0ad": {
+      "name": "Keshav kumar",
+      "recipient": "9576393493",
+      "sent_at": "2026-04-13T19:04:53.720376",
+      "status": "Absent"
+    },
+    "2eada6c44f5562120958789e5a554997972280ea": {
+      "name": "Ankit raj",
+      "recipient": "9576965887",
+      "sent_at": "2026-04-13T19:04:49.625139",
+      "status": "Absent"
+    },
+    "363dbf317e373b00f1d848b39901a6b0a008eb43": {
+      "name": "Saket Kumar Singh",
+      "recipient": "7992354115",
+      "sent_at": "2026-04-13T19:05:03.314684",
+      "status": "Absent"
+    },
+    "3b4f93e74be2906b2a8ead19974f7262200bf2e4": {
+      "name": "Swati Kumari",
+      "recipient": "7488240749",
+      "sent_at": "2026-04-13T19:05:09.114161",
+      "status": "Absent"
+    },
+    "426b82e0ee7e332e5d9c187e0d10e24cea5b0af1": {
+      "name": "Ritesh",
+      "recipient": "9504481203",
+      "sent_at": "2026-04-11T19:33:27.726471",
+      "status": "Absent"
+    },
+    "43897bc631b8648bbac4ab2d21e0c87543d8d891": {
+      "name": "Krishna",
+      "recipient": "7903010757",
+      "sent_at": "2026-04-11T19:33:27.209241",
+      "status": "Absent"
+    },
+    "45802bf732cf3d453090a661103ddcf8ada366b2": {
+      "name": "Utkarsh",
+      "recipient": "9631835107",
+      "sent_at": "2026-04-12T16:44:33.494674",
+      "status": "Absent"
+    },
+    "5c059218460e1f1a88b1bbf1434a251c295befe2": {
+      "name": "ADITYA KUMAR",
+      "recipient": "8809860696",
+      "sent_at": "2026-04-13T19:04:47.374122",
+      "status": "Absent"
+    },
+    "612e750f0fd7e4ea16cf969c96cf9aeb6cdfaff4": {
+      "name": "Diwakar kumar",
+      "recipient": "8434935629",
+      "sent_at": "2026-04-13T19:04:51.876261",
+      "status": "Absent"
+    },
+    "71d4a927ccf77a973e7a6e30f9ae394e62f6b80d": {
+      "name": "Satyam Raj",
+      "recipient": "9939063895",
+      "sent_at": "2026-04-12T16:44:32.944854",
+      "status": "Absent"
+    },
+    "749cbd3f140db59c303e2d7fa9923b9f0c286390": {
+      "name": "Rohit roy",
+      "recipient": "6200864171",
+      "sent_at": "2026-04-12T16:44:32.265619",
+      "status": "Absent"
+    },
+    "774834c5a2729de22934fa520d3ffde084880130": {
+      "name": "Riya sharma",
+      "recipient": "9955252387",
+      "sent_at": "2026-04-13T19:04:57.984401",
+      "status": "Absent"
+    },
+    "85927114274b7ce93b1dee2f604add7b489586c8": {
+      "name": "Krishna",
+      "recipient": "7903010757",
+      "sent_at": "2026-04-11T19:24:46.128555",
+      "status": "Absent"
+    },
+    "8ebe6615bb13ebfacb4647b1ae98a6bc94252f39": {
+      "name": "Shivam kumar",
+      "recipient": "8178320430",
+      "sent_at": "2026-04-13T19:05:06.051578",
+      "status": "Absent"
+    },
+    "a84442be3e2d7a5f16e7bd2cacd736c5d9eadc0f": {
+      "name": "Rishav Raman",
+      "recipient": "7667259035",
+      "sent_at": "2026-04-13T19:04:57.081038",
+      "status": "Absent"
+    },
+    "a8ea6e881adcaf7103aa50297c4157efb84969dc": {
+      "name": "Sunny Kumar",
+      "recipient": "7250034512",
+      "sent_at": "2026-04-13T19:05:08.273167",
+      "status": "Absent"
+    },
+    "ad6f25b181261eb2edccaa4be1cae55600cf57f0": {
+      "name": "Sahil raj",
+      "recipient": "9304818618",
+      "sent_at": "2026-04-13T19:05:01.522859",
+      "status": "Absent"
+    },
+    "b1d5a38c898cd6020cc97df2b885b71dcd92c6d4": {
+      "name": "Priyanshu Raj",
+      "recipient": "8757167257",
+      "sent_at": "2026-04-13T19:04:56.008572",
+      "status": "Absent"
+    },
+    "b7e03d873cc3323868c6ba1b4f70f5f5a680e6b8": {
+      "name": "DIVYANSHU RAJ",
+      "recipient": "8825205647",
+      "sent_at": "2026-04-13T19:04:51.022593",
+      "status": "Absent"
+    },
+    "db1301be1347ffc30a79ef8b8ed383f047ae15ce": {
+      "name": "Sonali kumari",
+      "recipient": "6201416401",
+      "sent_at": "2026-04-13T19:05:07.185930",
+      "status": "Absent"
+    },
+    "de51e8470edc984e842f5d1b093cf18567622a04": {
+      "name": "MOLU KUMAR",
+      "recipient": "8935849983",
+      "sent_at": "2026-04-13T19:04:54.434559",
+      "status": "Absent"
+    },
+    "e4cc0cde581f08a0f0ee2eeaae93476d3043ee18": {
+      "name": "Harsh Raj",
+      "recipient": "9576224998",
+      "sent_at": "2026-04-13T19:04:52.722050",
+      "status": "Absent"
+    },
+    "e80d5af0711d4d3183a0522bb98d07df7b689b3d": {
+      "name": "Bhaskar sahay",
+      "recipient": "9470413733",
+      "sent_at": "2026-04-13T19:04:50.312915",
+      "status": "Absent"
+    },
+    "f287c661c80da2795c66958b0fcbcb55632e7a14": {
+      "name": "Hrishu Raj",
+      "recipient": "8002040540",
+      "sent_at": "2026-04-12T16:44:31.087629",
+      "status": "Late"
+    },
+    "f339282ffc18a30d9fcc02b1da7d22c12a44458c": {
+      "name": "Prince Kumar",
+      "recipient": "7209820470",
+      "sent_at": "2026-04-13T19:04:55.130690",
+      "status": "Absent"
+    },
+    "f6c8213348fa23b430e8fcad556d3cf54a8860cd": {
+      "name": "Saras kumar",
+      "recipient": "9113472394",
+      "sent_at": "2026-04-13T19:05:04.056522",
+      "status": "Absent"
+    },
+    "fe44adca5fca8ec28baadc027a185c12a011e144": {
+      "name": "Sahil Singh",
+      "recipient": "9709967768",
+      "sent_at": "2026-04-13T19:05:00.554442",
+      "status": "Absent"
+    }
+  }
+}

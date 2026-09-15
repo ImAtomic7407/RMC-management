@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMC | Notifications</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/id-card.css">
+</head>
+<body class="dashboard-layout">
+    <div class="vibrant-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+        <div class="blob blob-5"></div>
+    </div>
+
+    <%- include('partials/sidebar', { user, activePage: 'leads' }) %>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div class="h-info">
+                <h1>Notifications Center</h1>
+                <p>Review ID requests and export absentee follow-up sheets with ready-to-send message links.</p>
+            </div>
+            <div class="h-actions">
+                <button class="btn-glass" onclick="refreshLeads()">Refresh</button>
+                <button class="btn-neon" onclick="markAllRead()">Mark All Read</button>
+            </div>
+        </header>
+
+        <section class="notification-tabs">
+            <button type="button" class="btn-glass notification-tab active" data-tab="notices">Notices <span id="tab-badge-notices" class="tab-badge hidden">0</span></button>
+            <button type="button" class="btn-glass notification-tab" data-tab="absentees">Absentee Reports <span id="tab-badge-absentees" class="tab-badge hidden">0</span></button>
+            <button type="button" class="btn-glass notification-tab" data-tab="test-reports">Test Reports <span id="tab-badge-test-reports" class="tab-badge hidden">0</span></button>
+            <button type="button" class="btn-glass notification-tab" data-tab="leads">Leads <span id="tab-badge-leads" class="tab-badge hidden">0</span></button>
+            <button type="button" class="btn-glass notification-tab" data-tab="id-requests">ID Requests <span id="tab-badge-id-requests" class="tab-badge hidden">0</span></button>
+        </section>
+
+        <section class="glass-container pane notification-panel active" data-panel="notices">
+            <div class="pane-header">
+                <h3>Notice Feed</h3>
+                <p>Latest published notices for staff reference.</p>
+            </div>
+            <div id="notice-feed" class="notice-stack">
+                <p class="msg">Loading notices...</p>
+            </div>
+        </section>
+
+        <section class="glass-container pane notification-panel" data-panel="absentees">
+            <div class="pane-header">
+                <h3>Absentee Report Export</h3>
+                <p>Choose a batch and closed session to download an Excel-friendly absentee sheet.</p>
+            </div>
+            <div class="export-grid">
+                <div class="input-group">
+                    <label>Batch</label>
+                    <select id="absentee-batch-select" class="input-glass">
+                        <option value="">Select batch...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Closed Session</label>
+                    <select id="absentee-session-select" class="input-glass" disabled>
+                        <option value="">Select closed session...</option>
+                    </select>
+                </div>
+                <div class="export-actions">
+                    <button id="absentee-export-btn" class="btn-neon" type="button" disabled>Export Absentees</button>
+                    <p id="absentee-export-status" class="helper-copy">The export adds a `Message Link` column that opens the SMS app with the message already typed.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-container pane notification-panel" data-panel="test-reports">
+            <div class="pane-header">
+                <h3>Test Report Export</h3>
+                <p>Download one sheet with `UID`, `Name`, and one separate column for each launched test in the selected batch.</p>
+            </div>
+            <div class="export-grid">
+                <div class="input-group">
+                    <label>Batch</label>
+                    <select id="test-report-batch-select" class="input-glass">
+                        <option value="">Select batch...</option>
+                    </select>
+                </div>
+                <div class="export-actions">
+                    <button id="test-report-export-btn" class="btn-neon" type="button" disabled>Export Test Report</button>
+                    <p id="test-report-status" class="helper-copy">Columns are generated like `TestName_YYYY-MM-DD`, and each cell shows the score for that student.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-container pane notification-panel" data-panel="leads">
+            <div class="pane-header">
+                <h3>Lead Pings</h3>
+                <p>Detailed contact-form leads received from `riteshmathematics.in`.</p>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Type</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Message</th>
+                            <th>When</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lead-table"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="glass-container pane notification-panel" data-panel="id-requests">
+            <div class="pane-header">
+                <h3>ID Requests</h3>
+                <p>Approve or block phone numbers for student ID generation.</p>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Type</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Message</th>
+                            <th>Permission</th>
+                            <th>When</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="id-request-table"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="id-preview-modal" class="id-preview-modal hidden">
+        <div class="id-preview-shell glass-container">
+            <button class="modal-close" type="button" id="id-preview-close">✕</button>
+            <h3 style="margin-bottom: 12px; color: var(--text-primary);">Student ID Preview</h3>
+            <div id="id-preview-card"></div>
+        </div>
+    </div>
+
+    <script src="/js/leads.js"></script>
+    <style>
+        .pane { padding: 26px; margin-top: 18px; }
+        .notification-tabs { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+        .notification-tab.active { background: rgba(59,130,246,0.18); border-color: rgba(59,130,246,0.35); color: #fff; }
+        .tab-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 999px; padding: 0 6px; margin-left: 8px; background: #ef4444; color: #fff; font-size: 0.72rem; font-weight: 800; }
+        .tab-badge.hidden { display: none; }
+        .notification-panel { display: none; }
+        .notification-panel.active { display: block; }
+        .pane-header { margin-bottom: 18px; }
+        .pane-header h3 { color: var(--text-primary); margin-bottom: 6px; }
+        .pane-header p { color: var(--text-secondary); }
+        .notice-stack { display: grid; gap: 14px; }
+        .notice-card { padding: 18px; border-radius: 18px; }
+        .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius: 999px; font-weight: 900; font-size: 0.82rem; border: 1px solid rgba(255,255,255,0.14); }
+        .pill.new { background: rgba(239,68,68,0.12); color: #fecaca; border-color: rgba(239,68,68,0.25); }
+        .pill.read { background: rgba(16,185,129,0.10); color: #bbf7d0; border-color: rgba(16,185,129,0.22); }
+        .msg { max-width: 520px; color: rgba(255,255,255,0.78); line-height: 1.4; }
+        .mono { font-family: monospace; color: rgba(255,255,255,0.75); }
+        .export-grid { display: grid; grid-template-columns: 1fr 1.2fr auto; gap: 16px; align-items: end; }
+        .export-actions { display: grid; gap: 10px; }
+        .helper-copy { max-width: 340px; color: rgba(255,255,255,0.68); font-size: 0.84rem; line-height: 1.5; }
+        code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 6px; }
+        .id-preview-modal { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.65); z-index: 9999; display: grid; place-items: center; padding: 18px; }
+        .id-preview-modal.hidden { display: none; }
+        .id-preview-shell { width: min(520px, 96vw); padding: 16px; position: relative; }
+        #id-preview-card { display: grid; place-items: center; }
+        .id-preview-shell .custom-rmc-id { width: min(460px, 100%); max-width: 460px; min-height: 640px; border-radius: 16px; }
+        @media (max-width: 1100px) { .export-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) {
+            .table-wrapper table { min-width: 760px; }
+            .notification-tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; -ms-overflow-style: none; }
+            .notification-tabs::-webkit-scrollbar { display: none; }
+            .notification-tab { flex: 0 0 auto; white-space: nowrap; }
+            .id-preview-shell .custom-rmc-id { min-height: 560px; }
+        }
+        @media (max-width: 640px) {
+            .pane { padding: 16px; margin-top: 14px; }
+            .pane-header { margin-bottom: 14px; }
+            .notification-tabs {
+                gap: 8px;
+                margin-top: 14px;
+            }
+            .notification-tab {
+                padding: 10px 14px;
+                font-size: 0.84rem;
+            }
+            .export-grid {
+                gap: 12px;
+            }
+            .export-actions .btn-neon {
+                width: 100%;
+            }
+            .helper-copy {
+                max-width: none;
+            }
+            .table-wrapper table { min-width: 680px; }
+        }
+    </style>
+</body>
+</html>

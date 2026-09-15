@@ -1,0 +1,402 @@
+:root { /* Global design tokens for the premium enrollment and registration environment. */
+    --bg: #030712; /* Defines the baseline void for the enrollment environment (Midnight). */
+    --panel: rgba(17, 24, 39, 0.7); /* Standard glass panel base for registration modules (Semi-opaque). */
+    --panel-border: rgba(255, 255, 255, 0.08); /* Subtle boundary highlight for glass containers (Rim-light). */
+    --primary: #3b82f6; /* Core institutional blue for verification and enrollment actions (Brand Blue). */
+    --primary-glow: rgba(59, 130, 246, 0.5); /* Emissive glow token for active scanners and buttons (Neon Glow). */
+    --accent: #22d3ee; /* Cyber-cyan highlight for focus states and slogans (Tech Cyan). */
+    --text: #f8fafc; /* High-contrast white for enrollment data entry (Off-white). */
+    --text-muted: #94a3b8; /* Slate gray for secondary field labels and hints (Muted Steel). */
+    --radius: 1.25rem; /* Standard institutional corner rounding for all enrollment panels. */
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; } /* Universal reset and institutional typography for the registration portal. */
+body.dark-theme { /* Applies the nocturnal enrollment environment theme. */
+    background: var(--bg); /* Applies the deep nocturnal enrollment environment background. */
+    color: var(--text); /* Sets the primary text color to high-contrast white. */
+    min-height: 100vh; /* Ensures the enrollment portal fills the full screen height. */
+    padding: 1rem; /* standard viewport gutter for mobile safety. */
+    display: flex; /* Enables flexbox for centered portal layout. */
+    justify-content: center; /* Horizontally centers the enrollment container. */
+    align-items: flex-start; /* Aligns content to the top for comfortable data entry. */
+}
+@media (min-width: 768px) { /* Desktop refinement for the enrollment terminal. */
+    body.dark-theme {
+        align-items: center; /* Centers the enrollment portal on desktop viewports. */
+        padding: 2rem; /* Enhanced gutter for wide-screen desktops. */
+    }
+}
+/* SHUTTER FLASH */
+.shutter-flash { /* Visual feedback mechanism for capturing student identification photos. */
+    position: fixed; /* Overlays the entire viewport independently. */
+    inset: 0; /* Expands to fill the full screen. */
+    background: #fff; /* High-intensity white for camera capture feedback (Flash). */
+    z-index: 9999; /* Ensures the flash stays above all UI elements. */
+    opacity: 0; /* Default state: Transparent. */
+    pointer-events: none; /* Prevents the flash from blocking clicks. */
+}
+.flash-active { /* state triggered by the webcam capture event. */
+    animation: shutterFlash 0.4s ease-out; /* Triggers the visual capture confirmation (Flash Ramp). */
+}
+@keyframes shutterFlash { /* Shutter flash opacity sequence (On/Off). */
+    0% { opacity: 1; } /* peak brightness. */
+    100% { opacity: 0; } /* clean fade-out. */
+}
+.neon-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; } /* Background aura host layer (Fixed position). */
+.neon-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: orbMove 20s infinite alternate; } /* Kinetic light engines for background atmosphere. */
+.orb-1 { width: 40vw; height: 40vw; background: var(--primary); top: -10%; left: -10%; } /* Primary blue aura for top-left glow. */
+.orb-2 { width: 30vw; height: 30vw; background: var(--accent); bottom: -10%; right: -5%; } /* Cyan accent aura for bottom-right glow. */
+.orb-3 { width: 20vw; height: 20vw; background: #8b5cf6; top: 40%; left: 30%; } /* Tertiary violet aura for depth (Middle ground). */
+@keyframes orbMove { /* Kinetic pathing for background atmospheric orbs. */
+    0% { transform: translate(0, 0) scale(1); } /* Start position. */
+    100% { transform: translate(100px, 50px) scale(1.1); } /* End position with slight scale magnification. */
+}
+.app-header { text-align: left; } /* Header alignment for the enrollment portal branding. */
+.brand-row { display: flex; justify-content: space-between; align-items: flex-start; } /* Branding and navigation alignment cluster. */
+.glitch-text { font-size: 3rem; font-weight: 900; letter-spacing: -2px; color: var(--text); } /* Institutional display typography for enrollment branding. */
+.nav-links { display: flex; gap: 8px; } /* Navigation container for portal switching. */
+.nav-links .btn-ghost { font-size: 0.6rem; padding: 6px 12px; border-radius: 20px; white-space: nowrap; } /* Compact navigation buttons. */
+.slogan { font-size: 0.6rem; color: var(--accent); letter-spacing: 2px; font-weight: 800; margin-top: -5px; } /* Institutional sub-branding for the registration module. */
+.header-divider { /* Visual separator between branding and registration form. */
+    width: 100%; /* Spans the full enrollment pane. */
+    border-bottom: 2px solid rgba(59, 130, 246, 0.2); /* Subtle blue highlight divider. */
+    margin-top: 1.5rem; /* Separation from slogan. */
+    position: relative; /* Anchor for the title badge. */
+    display: flex; /* alignment for the floating title. */
+    justify-content: center; /* Horizontally centers the title. */
+}
+.registration-title { /* floating label badge over the header divider. */
+    background: var(--bg); /* masks the line with the midnight background. */
+    padding: 0 20px; /* buffer for text readability. */
+    position: absolute; /* float over the divider. */
+    top: -12px; /* centered vertically on the line. */
+    font-size: 0.9rem; /* standard reading scale. */
+    font-weight: 900; /* bold categorical emphasis. */
+    color: var(--text-muted); /* muted steel for category labeling. */
+    letter-spacing: 2px; /* tracked type for clarity. */
+}
+.main-grid { /* The master layout host for the enrollment terminal. */
+    display: grid; /* Enables CSS Grid for component alignment. */
+    grid-template-columns: 1fr; /* Default single column for mobile enrollment. */
+    gap: 1.5rem; /* vertical separation between camera and form. */
+    margin-top: 2rem; /* separation from enrollment header. */
+    width: 100%; /* spans the container width. */
+}
+@media (min-width: 992px) { /* Split-screen refinement for desktop enrollment. */
+    .main-grid {
+        grid-template-columns: 380px 1fr; /* Split-screen layout for desktop: Camera Left, Form Right. */
+    }
+}
+.glass-panel { /* High-fidelity glassmorphism container for the registration modules. */
+    background: var(--panel);
+    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    animation: panelPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes panelPop {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+@media (min-width: 768px) { /* Tablet refinement for enrollment panels. */
+    .glass-panel {
+        padding: 2.5rem;
+        -webkit-backdrop-filter: blur(25px);
+        backdrop-filter: blur(25px);
+    }
+}
+/* CAMERA ANIMATION CONTROL */
+.pro-camera-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; } /* Camera alignment host for the enrollment portrait. */
+.circle-scanner { /* specialized circular viewport for institutional photo capture. */
+    width: 250px; height: 250px; border-radius: 50%; border: 3px solid var(--primary); background: #000; overflow: hidden; position: relative;
+    box-shadow: 0 0 50px var(--primary-glow);
+}
+.circle-scanner video, .circle-scanner img { width: 100%; height: 100%; object-fit: cover; } /* forces portrait fill for biometric recognition. */
+.circle-scanner video.mirror { transform: scaleX(-1); } /* Flips the webcam stream for intuitive staff usage (Mirror mode). */
+.scan-line { position: absolute; width: 100%; height: 3px; background: var(--accent); box-shadow: 0 0 15px var(--accent); top: 0; left: 0; z-index: 10; animation: scanMove 3s infinite linear; transition: opacity 0.3s ease; } /* Bio-metric scanning indicator (Cyan). */
+.scan-stopped { animation-play-state: paused !important; opacity: 0 !important; pointer-events: none; } /* Freezes and hides scan line upon successful capture of the student photo. */
+@keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } } /* Scanning cycle physics (0% to 100% loop). */
+.camera-ui-info { position: absolute; bottom: 20px; left: 50%; transform: translate(-50%); display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.7); padding: 6px 14px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.15); } /* Camera status label overlay for staff guidance. */
+.status-dot { width: 10px; height: 10px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 12px #22c55e; animation: pulse 1.5s infinite; } /* Live camera heart-beat indicator (Active Green). */
+.btn-action { width: 100%; padding: 1.2rem; border-radius: 14px; border: none; font-weight: 800; font-size: 1rem; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); } /* Primary Enrollment task button. */
+.btn-glow { background: var(--primary); color: #fff; box-shadow: 0 8px 25px var(--primary-glow); } /* Emissive action button for student record tasks. */
+.btn-primary:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 12px 30px rgba(59, 130, 246, 0.5); } /* Interactive hover lift for enrollment buttons. */
+/* AUTOFILL ALERT */
+.autofill-alert { /* Visual notification for automatic student record retrieval. */
+    background: rgba(34, 211, 238, 0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 14px;
+    border-radius: 14px;
+    margin-bottom: 24px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.1);
+}
+@keyframes slideIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } } /* Entrance transition (Slide and Fade). */
+.btn-primary.state-update { background: #f59e0b !important; color: #fff !important; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3) !important; }
+.btn-primary.state-view { background: #10b981 !important; color: #fff !important; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important; }
+/* FORM STYLING FIXES */
+.pro-form { display: flex; flex-direction: column; gap: 1.5rem; } /* Core enrollment form host for data entry fields. */
+label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 8px; display: block; } /* high-density categorical label styling. */
+input, select, textarea { /* standard styling for institutional data input. */
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--panel-border);
+    padding: 1.1rem 1.2rem;
+    border-radius: 14px;
+    color: #fff;
+    width: 100%;
+    line-height: 1.2;
+    min-height: 56px;
+    font-size: 1rem;
+    transition: 0.3s;
+}
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-position: calc(100% - 16px) center;
+    background-size: 18px;
+    background-repeat: no-repeat;
+    padding-right: 3rem;
+}
+select:focus, input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    background: rgba(0,0,0,0.6);
+}
+.form-row { display: flex; flex-direction: column; gap: 1.5rem; width: 100%; } /* Multi-column form support for complex student records. */
+@media (min-width: 768px) { /* Desktop refinement for multi-column form rows. */
+    .form-row { flex-direction: row; } /* switches to horizontal layout on tablet/desktop. */
+}
+.radio-cards { display: flex; gap: 1.2rem; width: 100%; } /* Container for interactive exam path cards (SSC/HSC). */
+.radio-card { /* premium replacement for standard radio inputs. */
+    flex: 1; text-align: center; background: rgba(0,0,0,0.4); border: 1px solid var(--panel-border);
+    border-radius: 14px; padding: 1.2rem; cursor: pointer; transition: 0.3s; min-height: 64px; display: flex; align-items: center; justify-content: center;
+}
+.radio-card:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05); } /* Interactive hover feedback. */
+.radio-card input[type="radio"] { display: none; } /* Hides native browser radio controls in favor of premium card design. */
+.radio-card input[type="radio"]:checked + span { color: #fff; font-weight: 900; } /* highlights the active card label. */
+.radio-card:has(input[type="radio"]:checked) { background: rgba(59, 130, 246, 0.25); border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); } /* Visual highlight for the selected student exam path. */
+.radio-card span { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); transition: 0.3s; pointer-events: none; text-transform: uppercase; letter-spacing: 1px; } /* card label typography. */
+.form-footer-ui { margin-top: 1rem; width: 100%; } /* Alignment host for bottom form actions. */
+.btn-primary { /* master action button for student enrollment completion. */
+    width: 100%; background: #fff; color: #000; border: none; padding: 1.2rem; border-radius: 10px; font-weight: 900; cursor: pointer; transition: 0.3s;
+    letter-spacing: 1px; /* high-vibrancy display lettering. */
+    display: flex; justify-content: center; align-items: center; gap: 10px;
+}
+/* NEW INLINE PREVIEW STYLING */
+.inline-preview { /* Result container for the 3D identity mockup revelation. */
+    margin-top: 3rem; /* vertical separation. */
+    width: 100%; /* expands to fill the pane width. */
+    display: flex; /* centered results host. */
+    flex-direction: column; /* vertical stacking of identity result. */
+    align-items: center; /* horizontally centers the identification mockup. */
+    gap: 2.5rem; /* uniform separation for clarity. */
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2rem;
+    animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1); /* Institutional entrance animation for identity results. */
+}
+@keyframes slideUp { /* Entrance animation sequence for successful student registration. */
+    from { transform: translateY(60px); opacity: 0; } /* Start state. */
+    to { transform: translateY(0); opacity: 1; } /* End state. */
+}
+.result-header { text-align: center; } /* Branding for record completion. */
+.result-header h3 { font-size: 1.8rem; font-weight: 900; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; } /* Identity revelation confirmation header. */
+.status-badge { font-size: 0.8rem; background: rgba(34, 211, 238, 0.1); color: var(--accent); padding: 6px 16px; border-radius: 20px; font-weight: 900; margin-top: 10px; display: inline-block; border: 1px solid rgba(34, 211, 238, 0.3); }
+
+.result-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    width: 100%;
+}
+@media (min-width: 992px) {
+    .result-grid {
+        grid-template-columns: auto 1fr;
+        align-items: start;
+    }
+}
+
+.card-display-box { /* Visual viewport for the student ID identity mockup. */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.full-render-display {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+}
+.render-label {
+    font-size: 0.8rem;
+    font-weight: 900;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+.render-viewport {
+    background: rgba(0,0,0,0.4);
+    border: 2px dashed rgba(255,255,255,0.1);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: auto;
+    width: 100%;
+    margin: 0 auto;
+}
+.compact-render {
+    min-height: 280px;
+    max-width: 560px;
+    overflow: hidden;
+}
+.generation-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    color: var(--accent);
+}
+.pulse-ring {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--accent);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.flat-id-image {
+    width: min(100%, 360px);
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    animation: fadeIn 0.8s ease-out;
+}
+.compact-id-image {
+    width: min(100%, 260px);
+    height: auto;
+    border-radius: 10px;
+}
+
+.inline-actions { /* administrative control cluster for the final enrollment step. */
+    display: flex; /* flexbox host for buttons. */
+    flex-direction: row; /* vertical stack for mobile-first administrative reach. */
+    justify-content: center;
+    gap: 1.5rem; /* uniform separation for record tasks. */
+    width: 100%; /* Spans the full preview pane. */
+}
+@media (max-width: 500px) {
+    .inline-actions { flex-direction: column; align-items: stretch; }
+    .inline-actions button { width: 100%; }
+}
+.box-actions { width: 100%; display: none; justify-content: center; }
+.picture-note {
+    text-align: center;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+.btn-action-small {
+    background: rgba(34, 211, 238, 0.1);
+    color: var(--accent);
+    border: 1px solid rgba(34, 211, 238, 0.4);
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-weight: 800;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.btn-action-small:hover { background: var(--accent); color: #000; }
+.btn-ghost { /* secondary transparent enrollment action. */
+    background: transparent; /* glass base. */
+    border: 1px solid var(--panel-border); /* subtle perimeter highlight. */
+    color: var(--text-muted); /* muted steel typography. */
+    padding: 1rem; /* optimized hit-area for touch terminals. */
+    border-radius: 12px; /* standard institutional rounding. */
+    font-weight: 700; /* semi-bold task label. */
+    cursor: pointer; /* indicates interactivity. */
+    transition: 0.3s; /* smooth state transitions. */
+}
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); } /* Ghost button focus state (Cyan). */
+.app-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+.camera-panel {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.camera-actions {
+    width: 100%;
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+}
+.status-text {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 1px;
+}
+.approval-hint {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    line-height: 1.4;
+}
+.download-btn {
+    border: none;
+    color: #fff;
+    padding: 1.2rem;
+    border-radius: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.input-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.input-block textarea {
+    resize: none;
+}
+.modal { display: none; }
+@media (max-width: 768px) {
+    .app-container { padding: 1rem; }
+    .glitch-text { font-size: 2.5rem; text-align: center; }
+    .slogan { text-align: center; font-size: 0.55rem; }
+    .header-divider { margin-top: 1rem; }
+    .circle-scanner { width: 220px; height: 220px; }
+}
+@media print { .modal { display: block !important; } } /* Printing utility for the high-fidelity identity system (Print mode). */

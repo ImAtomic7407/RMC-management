@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "RMC Mobile",
+    "slug": "rmc-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "rmcmobile",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#D1E0D4"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "android": {
+      "package": "in.rmc.mobile",
+      "versionCode": 1,
+      "usesCleartextTraffic": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#D1E0D4"
+      },
+      "permissions": [
+        "CAMERA",
+        "VIBRATE"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "updates": {
+      "enabled": false
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8f8b8a8a-13ec-484e-9c4c-ff9b4056a943"
+      }
+    }
+  }
+}

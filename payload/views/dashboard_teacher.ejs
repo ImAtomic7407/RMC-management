@@ -1,0 +1,1288 @@
+<!DOCTYPE html> <!-- Declares the document type as HTML5 for modern browser compliance. -->
+<html lang="en"> <!-- Sets the primary language of the teacher portal to English. -->
+<head> <!-- Metadata and static resource container for the academic session management. -->
+    <meta charset="UTF-8"> <!-- Ensures proper character encoding for student names and session titles. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Enables high-fidelity responsiveness for tablet-based classroom management. -->
+    <title>RMC | Teacher Console</title> <!-- Defines the browser tab title for the educational leadership gateway. -->
+    <link rel="stylesheet" href="/css/index.css"> <!-- Links to the master design system (Vibrant Aura/Mesh CSS). -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Imports the visualization engine for real-time attendance metrics. -->
+    <script src="/js/modules/zen_pillars.js"></script>
+</head>
+<body class="dashboard-layout"> <!-- Applies the specialized layout class for the teacher console environment. -->
+    <div class="vibrant-bg"> <!-- Master container for the 5-blob kinetic mesh animation. -->
+        <div class="blob blob-1"></div> <!-- Multi-colored animated blob (Amber) for background depth. -->
+        <div class="blob blob-2"></div> <!-- Multi-colored animated blob (Cyan) for background depth. -->
+        <div class="blob blob-3"></div> <!-- Multi-colored animated blob (Deep Blue) for background depth. -->
+        <div class="blob blob-4"></div> <!-- Multi-colored animated blob (Cyan-Vibrant) for background depth. -->
+        <div class="blob blob-5"></div> <!-- Multi-colored animated blob (Blue-Soft) for background depth. -->
+    </div>
+    <%- include('partials/sidebar', { user, activePage }) %>
+    <main class="main-content"> <!-- Primary container for the teacher dashboard modules. -->
+        <header class="content-header"> <!-- Container for the portal branding and session status. -->
+            <div class="h-info"> <!-- Branding section for the teacher console. -->
+                <h1>Teacher Console</h1> <!-- Primary heading identifying the academic management point. -->
+                <p>Manage your batch sessions and track real-time attendance.</p> <!-- Institutional guidance text for educators. -->
+            </div>
+            <div class="h-actions"> <!-- Action area for session-level status indicators. -->
+                <span id="session-status" class="session-badge">NO ACTIVE SESSION</span> <!-- Visual indicator of the current academic session state. -->
+                <a href="/leads" class="btn-glass sm" style="text-decoration:none;">
+                    Notifications <span id="lead-badge" class="nav-badge hidden">0</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- ZEN PILLARS NAVIGATION -->
+        <div id="zen-pillars-nav"></div>
+
+        <div id="zen-sections">
+            <!-- SECTION 1: CLASSROOM (DEFAULT) -->
+            <div id="section-classroom" class="zen-section hidden">
+        <!-- Session Control -->
+        <section class="session-controls glass-container mb-40"> <!-- Glass container for configuring class-room sessions. -->
+            <div class="control-grid"> <!-- Grid layout for session initialization fields. -->
+                <div class="input-group"> <!-- Structural wrapper for batch selection. -->
+                    <label>Select Your Batch</label> <!-- Label identifying the target student demographic. -->
+                    <select id="batch-session-select" class="input-glass"> <!-- Selection bridge to the /api/batches database. -->
+                        <option value="">Select Batch...</option> <!-- Default empty state for the batch selector. -->
+                    </select>
+                </div>
+                <div class="input-group"> <!-- Structural wrapper for session naming. -->
+                    <label>Session Name</label> <!-- Label for identifying the specific lecture or activity. -->
+                    <input type="text" id="session-name-input" class="input-glass" placeholder="e.g., Morning Lecture"> <!-- Field for entering the unique session identifier. -->
+                </div>
+                <div class="btn-group"> <!-- Container for session lifecycle triggers. -->
+                    <button id="btn-start-session" class="btn-neon">Start Class</button> <!-- Trigger for creating a new verification window. -->
+                    <button id="btn-open-scanner" class="btn-glass info hidden" type="button">Open Scanner</button>
+                    <button id="btn-late-session" class="btn-glass info hidden">Late Entry</button> <!-- NEW: Tactical trigger for late entry mode. -->
+                    <button id="btn-close-session" class="btn-glass danger hidden">CLOSE SESSION & NOTIFY</button> <!-- Trigger for terminating the attendance window and dispatching alerts. -->
+                </div>
+            </div>
+            <p style="margin: -6px 24px 0; color: var(--text-secondary); font-size: 0.82rem;">Starting a class locks the batch and opens the scanner view in Staff Dashboard.</p>
+            <div id="batch-summary" class="batch-summary hidden">
+                <div class="batch-summary-item">
+                    <span class="sum-label">Batch</span>
+                    <strong id="sum-name">-</strong>
+                </div>
+                <div class="batch-summary-item">
+                    <span class="sum-label">Strength</span>
+                    <strong id="sum-strength">0</strong>
+                </div>
+                <div class="batch-summary-item">
+                    <span class="sum-label">Active Session</span>
+                    <strong id="sum-active">No</strong>
+                </div>
+                <div class="batch-summary-item">
+                    <span class="sum-label">Last Session</span>
+                    <strong id="sum-last">-</strong>
+                </div>
+            </div>
+        </section>
+        </div>
+
+        <!-- SECTION 2: BROADCAST -->
+        <div id="section-broadcast" class="zen-section hidden">
+            <section id="notice-compose" class="glass-container mb-40">
+                <div class="section-header">
+                    <h2>Publish Notice</h2>
+                </div>
+                <form id="notice-form" class="notice-grid">
+                    <div class="input-group">
+                        <label>Target</label>
+                        <select id="notice-target" class="input-glass">
+                            <option value="ALL">All Batches</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Title</label>
+                        <input id="notice-title" type="text" class="input-glass" placeholder="e.g., Coaching closed today">
+                    </div>
+                    <div class="input-group notice-msg">
+                        <label>Message</label>
+                        <textarea id="notice-content" class="input-glass" rows="3" placeholder="Write the notice students should receive"></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="btn-neon">Send Notice</button>
+                        <span id="notice-status" class="status-inline"></span>
+                    </div>
+                </form>
+                <div class="section-header" style="margin-top: 24px;">
+                    <h2>Recent Notices</h2>
+                </div>
+                <div id="teacher-notice-list" class="item-grid compact-grid">
+                    <p class="msg">Loading notices...</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- SECTION 3: TEST MANAGEMENT -->
+        <div id="section-tests" class="zen-section hidden">
+            <div class="dashboard-split" style="grid-template-columns: 1.2fr 1fr;">
+                <section class="glass-container">
+                    <div class="section-header">
+                        <h2>Make Test Paper</h2>
+                        <div class="btn-group">
+                            <span id="question-count-label" class="status-inline">0 questions</span>
+                            <button id="btn-add-question" data-add-question="1" class="btn-glass sm" type="button">Add Question</button>
+                        </div>
+                    </div>
+                    <form id="test-paper-form" class="notice-grid">
+                        <div class="input-group">
+                            <label>Test Title</label>
+                            <input id="test-title" class="input-glass" type="text" placeholder="e.g., Unit Test 4">
+                        </div>
+                        <div class="input-group">
+                            <label>Subject</label>
+                            <input id="test-subject" class="input-glass" type="text" placeholder="e.g., Physics">
+                        </div>
+                        <div class="input-group">
+                            <label>Duration (minutes)</label>
+                            <input id="test-duration" class="input-glass" type="number" min="1" value="30">
+                        </div>
+                        <div class="input-group" style="align-self:end;">
+                            <span id="test-paper-status" class="status-inline">Build the paper and save it to the library.</span>
+                        </div>
+                        <div id="question-builder" class="question-builder"></div>
+                        <div class="question-builder-actions">
+                            <button id="btn-add-question-inline" data-add-question="1" class="btn-glass sm" type="button">+ Add 2nd / Next Question</button>
+                            <span class="status-inline">Create Question 1, Question 2, Question 3... in one paper.</span>
+                        </div>
+                        <div class="btn-group" style="grid-column: 1 / -1;">
+                            <button type="submit" class="btn-neon">Save Test Paper</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="glass-container">
+                    <div class="section-header">
+                        <h2>Launch Test</h2>
+                    </div>
+                    <div class="notice-grid" style="padding: 0;">
+                        <div class="input-group">
+                            <label>Batch Selection</label>
+                            <select id="test-batch-select" class="input-glass">
+                                <option value="">Select batch...</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Paper Selection</label>
+                            <select id="test-paper-select" class="input-glass">
+                                <option value="">Select saved paper...</option>
+                            </select>
+                        </div>
+                        <div class="btn-group" style="grid-column: 1 / -1; justify-content:flex-start;">
+                            <button id="btn-launch-test" class="btn-neon" type="button">Start Test</button>
+                            <span id="test-launch-status" class="status-inline">Choose a batch and paper to go live.</span>
+                        </div>
+                    </div>
+
+                    <div class="section-header" style="margin-top: 28px;">
+                        <h2>Paper Library</h2>
+                    </div>
+                    <div id="paper-library" class="item-grid compact-grid">
+                        <p class="msg">Loading saved papers...</p>
+                    </div>
+                </section>
+            </div>
+
+            <section class="glass-container mt-40">
+                <div class="section-header">
+                    <h2>Test Results & Analytics</h2>
+                    <div class="btn-group">
+                        <button id="btn-refresh-tests" class="btn-glass sm" type="button">Refresh</button>
+                    </div>
+                </div>
+                <div class="notice-grid" style="padding: 0 0 18px;">
+                    <div class="input-group">
+                        <label>Active / Closed Tests</label>
+                        <select id="results-launch-select" class="input-glass">
+                            <option value="">Select a launched test...</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Scoreboard Visibility</label>
+                        <div class="toggle-row">
+                            <label class="toggle-wrap">
+                                <input id="publish-scoreboard-toggle" type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span id="scoreboard-toggle-label" class="status-inline">Students cannot see the rank table yet.</span>
+                        </div>
+                    </div>
+                    <div class="btn-group" style="grid-column: 1 / -1; justify-content:flex-start;">
+                        <button id="btn-close-test" class="btn-glass danger" type="button">Close Selected Test</button>
+                        <span id="test-results-status" class="status-inline">Pick a launched test to inspect submissions and ranking.</span>
+                    </div>
+                </div>
+
+                <div class="results-shell">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>UID</th>
+                                    <th>Batch</th>
+                                    <th>Score</th>
+                                    <th>Submitted</th>
+                                </tr>
+                            </thead>
+                            <tbody id="test-submission-list">
+                                <tr><td colspan="5" class="msg">Select a launched test to load submissions.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="scoreboard-shell">
+                        <h3>Leaderboard Preview</h3>
+                        <div id="teacher-scoreboard-list" class="scoreboard-stack">
+                            <p class="msg">Leaderboard preview will appear here.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SECTION 4: ATTENDANCE FEED -->
+        <div id="section-attendance" class="zen-section hidden">
+            <div class="dashboard-split" style="grid-template-columns: 1fr;"> <!-- Real-time student record aggregation grid. -->
+            <section class="live-attendance glass-container"> <!-- Header branding for the live student list. -->
+                <div class="section-header"> <!-- Header branding for the live student list. -->
+                    <h2>Live Attendance | <span id="current-batch-label">...</span></h2> <!-- Title tracking the active batch identifier. -->
+                </div>
+                <div class="table-wrapper"> <!-- Ensures horizontal scrolling for complex record tables. -->
+                    <table> <!-- Master grid for student verification timestamps. -->
+                        <thead> <!-- Column definitions for the attendance grid. -->
+                            <tr>
+                                <th>UID</th> <!-- Trio-Lock identifier for the student. -->
+                                <th>Name</th> <!-- Legal name of the identified student. -->
+                                <th>Status</th> <!-- Current verification state within the session. -->
+                                <th>Timestamp</th> <!-- Exact time of the QR verification hit. -->
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-list"> <!-- Target container for dynamic student row injection. -->
+                            <!-- Live updates -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <section class="session-stats glass-container"> <!-- Visualization module for session demographics. -->
+                <div class="stat-card"> <!-- Professional container for the attendance chart. -->
+                    <h3>Session Strength</h3> <!-- Heading identifying the demographic breakdown. -->
+                    <div class="chart-container-large"> <!-- Constraints for the Chart.js doughnut rendering. -->
+                        <canvas id="live-chart"></canvas> <!-- Canvas target for the attendance visualization engine. -->
+                    </div>
+                    <div id="stat-count" class="stat-val">0/0</div> <!-- Numerical representation of present students. -->
+                    <span class="stat-label">Students Present</span> <!-- Metadata describing the numerical counter. -->
+                </div>
+            </section>
+        </div>
+    </main>
+    <script>
+        const batchSelector = document.getElementById('batch-session-select'); // Selects the batch dropdown for data injection.
+        const sessionNameInput = document.getElementById('session-name-input'); // Selects the session name field.
+        const btnStart = document.getElementById('btn-start-session'); // Selects the start session trigger.
+        const btnOpenScanner = document.getElementById('btn-open-scanner'); // Selects the scanner navigation button.
+        const btnClose = document.getElementById('btn-close-session'); // Selects the close session trigger.
+        const btnLate = document.getElementById('btn-late-session'); // Selects the late-entry trigger.
+        const statusBadge = document.getElementById('session-status'); // Selects the status indicator for state updates.
+        const batchSummary = document.getElementById('batch-summary');
+        const currentBatchLabel = document.getElementById('current-batch-label');
+        const testBatchSelect = document.getElementById('test-batch-select');
+        const testPaperSelect = document.getElementById('test-paper-select');
+        const questionBuilder = document.getElementById('question-builder');
+        const questionCountLabel = document.getElementById('question-count-label');
+        const testPaperStatus = document.getElementById('test-paper-status');
+        const testLaunchStatus = document.getElementById('test-launch-status');
+        const resultsLaunchSelect = document.getElementById('results-launch-select');
+        const testSubmissionList = document.getElementById('test-submission-list');
+        const teacherScoreboardList = document.getElementById('teacher-scoreboard-list');
+        const publishScoreboardToggle = document.getElementById('publish-scoreboard-toggle');
+        const scoreboardToggleLabel = document.getElementById('scoreboard-toggle-label');
+        const testResultsStatus = document.getElementById('test-results-status');
+        const paperLibrary = document.getElementById('paper-library');
+        const attendanceList = document.getElementById('attendance-list');
+        const teacherNoticeList = document.getElementById('teacher-notice-list');
+        let activeSessionId = null; // Stores the UUID of the current academic session.
+        let activeSessionInfo = null;
+        let loadedTestPapers = [];
+        let loadedLaunches = [];
+        let questionCount = 0;
+        let teacherLiveStream = null;
+        let liveChart = null;
+        async function canReconnectStaffStream() {
+            try {
+                const res = await fetch('/api/session', { cache: 'no-store', credentials: 'same-origin' });
+                return res.ok;
+            } catch {
+                return true;
+            }
+        }
+
+        async function fetchJsonOrThrow(url, options = {}, fallbackMessage = 'Request failed.') {
+            const response = await fetch(url, {
+                headers: { Accept: 'application/json', ...(options.headers || {}) },
+                ...options
+            });
+            const contentType = response.headers.get('content-type') || '';
+            const payload = contentType.includes('application/json')
+                ? await response.json()
+                : null;
+
+            if (!response.ok) {
+                throw new Error(payload?.error || payload?.message || fallbackMessage);
+            }
+
+            if (payload === null) {
+                throw new Error(fallbackMessage);
+            }
+
+            return payload;
+        }
+
+        function setSessionControlsLocked(locked, session = null) {
+            batchSelector.disabled = locked;
+            sessionNameInput.disabled = locked;
+
+            if (locked) {
+                btnStart.classList.add('hidden');
+                btnOpenScanner.classList.remove('hidden');
+                btnClose.classList.remove('hidden');
+                btnLate.classList.toggle('hidden', !!(session && session.is_late === 1));
+                statusBadge.classList.add('active');
+                if (session && session.is_late === 1) {
+                    statusBadge.textContent = 'LATE ENTRY MODE ACTIVE';
+                    statusBadge.style.color = '#fbbf24';
+                    statusBadge.style.background = 'rgba(251, 191, 36, 0.12)';
+                    statusBadge.style.borderColor = 'rgba(251, 191, 36, 0.25)';
+                } else {
+                    statusBadge.textContent = session && session.session_name ? `ACTIVE: ${session.session_name}` : 'ACTIVE SESSION';
+                    statusBadge.style.color = '';
+                    statusBadge.style.background = '';
+                    statusBadge.style.borderColor = '';
+                }
+                currentBatchLabel.textContent = (session && session.batch_id) ? session.batch_id : (batchSelector.value || '...');
+                if (session && session.batch_id) {
+                    loadBatchSummary(session.batch_id);
+                }
+                loadLiveAttendanceFeed();
+            } else {
+                btnStart.classList.remove('hidden');
+                btnOpenScanner.classList.add('hidden');
+                btnClose.classList.add('hidden');
+                btnLate.classList.add('hidden');
+                statusBadge.classList.remove('active');
+                statusBadge.textContent = 'NO ACTIVE SESSION';
+                statusBadge.style.color = '';
+                statusBadge.style.background = '';
+                statusBadge.style.borderColor = '';
+                currentBatchLabel.textContent = '...';
+                batchSummary.classList.add('hidden');
+                clearLiveAttendanceState('Start a class to load the live attendance feed.');
+            }
+        }
+
+        function attendanceLabelFromCode(code) {
+            if (code === 2) return 'Late';
+            if (code === 1) return 'Present';
+            return 'Not marked';
+        }
+
+        function attendanceClassFromCode(code) {
+            if (code === 2) return 'warning';
+            if (code === 1) return 'active';
+            return 'idle';
+        }
+
+        function formatAttendanceTimestamp(value) {
+            if (!value) return '--';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '--';
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function clearLiveAttendanceState(message = 'No active session right now.') {
+            if (attendanceList) {
+                attendanceList.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="msg">${message}</td>
+                    </tr>
+                `;
+            }
+            updateChart(0, 0);
+        }
+
+        function renderLiveAttendanceFeed(payload) {
+            const roster = Array.isArray(payload?.roster) ? payload.roster : [];
+            const totals = payload?.totals || {};
+            const markedStudents = roster.filter((student) => Number(student.attendance_status || 0) > 0);
+
+            if (!markedStudents.length) {
+                if (attendanceList) {
+                    attendanceList.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="msg">No students have been marked in this session yet.</td>
+                        </tr>
+                    `;
+                }
+            } else if (attendanceList) {
+                const rows = [...markedStudents].sort((a, b) => {
+                    const left = new Date(a.attendance_timestamp || 0).getTime();
+                    const right = new Date(b.attendance_timestamp || 0).getTime();
+                    return right - left;
+                });
+
+                attendanceList.innerHTML = rows.map((student) => {
+                    const statusCode = Number(student.attendance_status || 0);
+                    return `
+                        <tr class="glow-on-hover">
+                            <td><span class="uid-tag">${escapeHtml(student.student_uid)}</span></td>
+                            <td><span class="name-bold">${escapeHtml(student.name)}</span></td>
+                            <td><span class="status-pulse ${attendanceClassFromCode(statusCode)}">${attendanceLabelFromCode(statusCode)}</span></td>
+                            <td>${escapeHtml(formatAttendanceTimestamp(student.attendance_timestamp))}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            updateChart(
+                Number(totals.present || 0) + Number(totals.late || 0),
+                Number(totals.total || roster.length || 0)
+            );
+        }
+
+        async function loadLiveAttendanceFeed() {
+            if (!activeSessionId) {
+                clearLiveAttendanceState('Start a class to load the live attendance feed.');
+                return;
+            }
+
+            try {
+                const payload = await fetchJsonOrThrow(
+                    `/api/sessions/${encodeURIComponent(activeSessionId)}/roster`,
+                    {},
+                    'Could not load the live attendance feed.'
+                );
+                renderLiveAttendanceFeed(payload);
+            } catch (error) {
+                console.error('Failed to refresh live attendance feed', error);
+            }
+        }
+
+        function connectTeacherLiveStream() {
+            if (teacherLiveStream) return;
+            try {
+                teacherLiveStream = new EventSource('/api/staff/live/stream');
+                teacherLiveStream.onmessage = (event) => {
+                    try {
+                        const payload = JSON.parse(event.data || '{}');
+                        const type = String(payload.type || '');
+                        if (!type || type === 'heartbeat') return;
+                        if (type === 'attendance_marked' || type === 'session_started' || type === 'session_closed' || type === 'session_late_mode' || type === 'student_records_updated' || type === 'batch_updated') {
+                            loadCurrentSession();
+                            loadLiveAttendanceFeed();
+                        }
+                        if (type === 'notice_update' || type === 'student_notice') {
+                            loadTeacherNotices();
+                        }
+                    } catch {
+                        loadCurrentSession();
+                        loadLiveAttendanceFeed();
+                    }
+                };
+                teacherLiveStream.onerror = () => {
+                    if (teacherLiveStream) {
+                        teacherLiveStream.close();
+                        teacherLiveStream = null;
+                    }
+                    void (async () => {
+                        if (await canReconnectStaffStream()) {
+                            window.setTimeout(connectTeacherLiveStream, 2000);
+                        }
+                    })();
+                };
+            } catch (error) {
+                console.warn('Teacher live stream unavailable', error);
+                void (async () => {
+                    if (await canReconnectStaffStream()) {
+                        window.setTimeout(connectTeacherLiveStream, 2000);
+                    }
+                })();
+            }
+        }
+
+        // Init Data
+        fetchJsonOrThrow('/api/batches', {}, 'Could not load batches.')
+            .then((batches) => {
+                batches.forEach(b => { // Iterates through each batch to populate the selector.
+                    const opt = document.createElement('option'); // Creates a new option element.
+                    opt.value = b.name; // Sets the batch name as the option value.
+                    opt.textContent = b.name; // Displays the batch name to the teacher.
+                    batchSelector.appendChild(opt); // Injects the option into the DOM.
+                    if (testBatchSelect) {
+                        const testOpt = document.createElement('option');
+                        testOpt.value = b.name;
+                        testOpt.textContent = b.name;
+                        testBatchSelect.appendChild(testOpt);
+                    }
+                });
+
+                const noticeTarget = document.getElementById('notice-target');
+                if (noticeTarget) {
+                    batches.forEach((b) => {
+                        const opt = document.createElement('option');
+                        opt.value = b.name;
+                        opt.textContent = b.name;
+                        noticeTarget.appendChild(opt);
+                    });
+                }
+
+                loadCurrentSession();
+                loadTeacherNotices();
+                connectTeacherLiveStream();
+            })
+            .catch((error) => {
+                console.error('Failed to load teacher batches', error);
+                alert(error.message || 'Could not load batches.');
+            });
+        async function loadTeacherNotices() {
+            if (!teacherNoticeList) return;
+            teacherNoticeList.innerHTML = '<p class="msg">Loading notices...</p>';
+            try {
+                const data = await fetchJsonOrThrow('/api/notices', {}, 'Failed to load notices.');
+                const notices = Array.isArray(data?.notices) ? data.notices : [];
+                teacherNoticeList.innerHTML = notices.length ? notices.map((notice) => `
+                    <article class="glass-container notice-card">
+                        <div class="meta-line">${escapeHtml(notice.target_batch || 'ALL')} · ${escapeHtml(new Date(notice.created_at).toLocaleString())}</div>
+                        <h4 class="name-bold">${escapeHtml(notice.title || 'Notice')}</h4>
+                        <p class="msg">${escapeHtml(notice.content || '')}</p>
+                        <div class="btn-group" style="margin-top:10px;">
+                            <button class="btn-glass sm danger" onclick="deleteTeacherNotice(${Number(notice.id) || 0})">Delete</button>
+                        </div>
+                    </article>
+                `).join('') : '<p class="msg">No notices sent yet.</p>';
+            } catch (error) {
+                teacherNoticeList.innerHTML = `<p class="msg">${escapeHtml(error.message || 'Could not load notices.')}</p>`;
+            }
+        }
+
+        window.deleteTeacherNotice = async (id) => {
+            const noticeId = Number(id);
+            if (!noticeId) return;
+            if (!window.confirm('Delete this notice?')) return;
+            try {
+                await fetchJsonOrThrow(`/api/notices/${noticeId}`, { method: 'DELETE' }, 'Failed to delete notice.');
+                const statusEl = document.getElementById('notice-status');
+                if (statusEl) statusEl.textContent = 'Notice deleted.';
+                await loadTeacherNotices();
+            } catch (error) {
+                alert(error.message || 'Failed to delete notice.');
+            }
+        };
+
+        const noticeForm = document.getElementById('notice-form');
+        if (noticeForm) {
+            noticeForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const statusEl = document.getElementById('notice-status');
+                const payload = {
+                    target_batch: document.getElementById('notice-target').value,
+                    title: document.getElementById('notice-title').value.trim(),
+                    content: document.getElementById('notice-content').value.trim()
+                };
+                if (!payload.title || !payload.content) {
+                    alert('Title and message are required.');
+                    return;
+                }
+                statusEl.textContent = 'Sending...';
+                try {
+                    const data = await fetchJsonOrThrow('/api/notices', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    }, 'Failed to send notice.');
+                    statusEl.textContent = `Sent to ${data.recipients} students`;
+                    noticeForm.reset();
+                    document.getElementById('notice-target').value = 'ALL';
+                    await loadTeacherNotices();
+                } catch (error) {
+                    statusEl.textContent = error.message || 'Failed to send notice';
+                }
+            });
+        }
+        btnOpenScanner.onclick = () => {
+            window.location.href = '/staff_gateway';
+        };
+        btnStart.onclick = async () => { // Triggered when the teacher starts the lecture.
+            const batch = batchSelector.value; // Extracts the selected batch identifier.
+            const name = sessionNameInput.value; // Extracts the provided session name.
+            if(!batch || !name) return alert("Select Batch & Enter Name"); // Prevents empty session initialization.
+            try {
+                const data = await fetchJsonOrThrow('/api/sessions/start', { // Dispatches the session creation request to the server.
+                    method: 'POST', // Uses POST for session creation.
+                    headers: {'Content-Type': 'application/json'}, // Informs the server of the JSON payload format.
+                    body: JSON.stringify({ session_name: name, batch_id: batch }) // Serializes the session configuration.
+                }, 'Could not start the session.');
+                activeSessionId = data.session_id; // Retrieves the high-resolution session handle.
+                activeSessionInfo = { session_name: name, batch_id: batch, is_late: 0 };
+                setSessionControlsLocked(true, activeSessionInfo);
+                window.setTimeout(() => {
+                    window.location.href = data.redirect || '/staff_gateway';
+                }, 300);
+            } catch (error) {
+                alert(error.message || 'Could not start the session.');
+            }
+        };
+
+        async function loadCurrentSession() {
+            try {
+                const data = await fetchJsonOrThrow('/api/sessions/current', {}, 'Could not restore the current session.');
+                if (data.status === 'success' && data.data) {
+                    activeSessionId = data.data.session_id;
+                    activeSessionInfo = data.data;
+                    setSessionControlsLocked(true, data.data);
+                } else {
+                    activeSessionId = null;
+                    activeSessionInfo = null;
+                    setSessionControlsLocked(false);
+                }
+            } catch (error) {
+                console.error('Failed to restore current session', error);
+            }
+        }
+
+        async function loadBatchSummary(batchName) {
+            if (!batchName) {
+                batchSummary.classList.add('hidden');
+                return;
+            }
+
+            const res = await fetch(`/api/batches/${encodeURIComponent(batchName)}/summary`);
+            const data = await res.json();
+            if (!res.ok || data.status !== 'success') {
+                batchSummary.classList.add('hidden');
+                return;
+            }
+
+            const info = data.batch || {};
+            batchSummary.classList.remove('hidden');
+            document.getElementById('sum-name').textContent = info.name || '-';
+            document.getElementById('sum-strength').textContent = String(info.strength ?? 0);
+            document.getElementById('sum-active').textContent = info.active_session ? (info.active_session.session_name || 'Running') : 'No';
+            document.getElementById('sum-last').textContent = info.last_session ? (info.last_session.session_name || 'Closed Session') : '-';
+        }
+
+        batchSelector.addEventListener('change', () => {
+            loadBatchSummary(batchSelector.value);
+        });
+
+        document.getElementById('btn-late-session').onclick = async () => {
+            if(!activeSessionId) return;
+            try {
+                await fetchJsonOrThrow(`/api/sessions/${activeSessionId}/late`, { method: 'POST' }, 'Could not enable late entry mode.');
+                statusBadge.textContent = `LATE ENTRY MODE ACTIVE`;
+                statusBadge.style.color = '#fbbf24'; // Warning Amber
+                btnLate.classList.add('hidden'); // Hide after clicking
+                if (activeSessionInfo) {
+                    activeSessionInfo.is_late = 1;
+                }
+            } catch (error) {
+                alert(error.message || 'Could not enable late entry mode.');
+            }
+        };
+
+        btnClose.onclick = async () => {
+            if(!activeSessionId) return;
+            try {
+                const data = await fetchJsonOrThrow(`/api/sessions/${activeSessionId}/close`, { method: 'POST' }, 'Could not close the current session.');
+                alert(`Session closed. ${data.absentees_count || 0} absentees notified.`);
+                activeSessionId = null;
+                activeSessionInfo = null;
+                setSessionControlsLocked(false);
+            } catch (error) {
+                alert(error.message || 'Could not close the current session.');
+            }
+        };
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+
+        function medalForRank(rank) {
+            if (rank === 1) return '🥇';
+            if (rank === 2) return '🥈';
+            if (rank === 3) return '🥉';
+            return `#${rank}`;
+        }
+
+        function setPaperStatus(message, isError = false) {
+            if (!testPaperStatus) return;
+            testPaperStatus.textContent = message;
+            testPaperStatus.style.color = isError ? '#fca5a5' : '';
+        }
+
+        function setLaunchStatus(message, isError = false) {
+            if (!testLaunchStatus) return;
+            testLaunchStatus.textContent = message;
+            testLaunchStatus.style.color = isError ? '#fca5a5' : '';
+        }
+
+        function setResultsStatus(message, isError = false) {
+            if (!testResultsStatus) return;
+            testResultsStatus.textContent = message;
+            testResultsStatus.style.color = isError ? '#fca5a5' : '';
+        }
+
+        function addQuestionCard(question = {}) {
+            if (!questionBuilder) return;
+            questionCount += 1;
+            const cardId = `q-${Date.now()}-${questionCount}`;
+            const card = document.createElement('div');
+            card.className = 'glass-container question-card';
+            card.dataset.cardId = cardId;
+            card.innerHTML = `
+                <div class="question-card-head">
+                    <span class="question-index-pill">Question <span class="question-number">${questionCount}</span></span>
+                    <button type="button" class="btn-glass sm danger remove-question-btn">Remove</button>
+                </div>
+                <div class="input-group">
+                    <label>Question Text</label>
+                    <textarea class="input-glass question-text" rows="3" placeholder="Write the MCQ question...">${escapeHtml(question.question_text || '')}</textarea>
+                </div>
+                <div class="question-options-grid">
+                    ${['A', 'B', 'C', 'D'].map((optionKey) => `
+                        <div class="input-group">
+                            <label class="option-input-label">
+                                <span class="option-chip">${optionKey}</span>
+                                <span>Option ${optionKey}</span>
+                            </label>
+                            <input class="input-glass question-option" data-option="${optionKey}" value="${escapeHtml(question[`option_${optionKey.toLowerCase()}`] || '')}" placeholder="Type option ${optionKey}">
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="input-group">
+                    <label>Correct Answer (A/B/C/D)</label>
+                    <div class="correct-option-row">
+                        ${['A', 'B', 'C', 'D'].map((optionKey) => `
+                            <label class="correct-pill">
+                                <input type="radio" name="correct-${cardId}" value="${optionKey}" ${question.correct_option === optionKey ? 'checked' : ''}>
+                                <span>${optionKey}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            card.querySelector('.remove-question-btn')?.addEventListener('click', () => {
+                card.remove();
+                syncQuestionLabels();
+            });
+            questionBuilder.appendChild(card);
+            syncQuestionLabels();
+        }
+
+        function syncQuestionLabels() {
+            Array.from(document.querySelectorAll('.question-card')).forEach((card, index) => {
+                const label = card.querySelector('.question-number');
+                if (label) label.textContent = `${index + 1}`;
+            });
+            if (questionCountLabel) {
+                const total = document.querySelectorAll('.question-card').length;
+                questionCountLabel.textContent = `${total} question${total === 1 ? '' : 's'}`;
+            }
+        }
+
+        function collectQuestions() {
+            const rows = Array.from(document.querySelectorAll('.question-card')).map((card, index) => {
+                const questionText = card.querySelector('.question-text')?.value?.trim() || '';
+                const options = {};
+                card.querySelectorAll('.question-option').forEach((input) => {
+                    options[input.dataset.option] = input.value.trim();
+                });
+                const correctOption = card.querySelector('input[type="radio"]:checked')?.value || '';
+                return {
+                    index: index + 1,
+                    question_text: questionText,
+                    options,
+                    correct_option: correctOption
+                };
+            });
+
+            const invalid = rows.find((row) => {
+                const hasText = Boolean(row.question_text);
+                const hasOptions = ['A', 'B', 'C', 'D'].every((key) => Boolean(row.options[key]));
+                const hasCorrect = Boolean(row.correct_option);
+                return !hasText || !hasOptions || !hasCorrect;
+            });
+
+            if (invalid) {
+                return {
+                    questions: [],
+                    error: `Question ${invalid.index} is incomplete. Fill text, options A-D, and choose one correct answer.`
+                };
+            }
+
+            return {
+                questions: rows.map(({ question_text, options, correct_option }) => ({ question_text, options, correct_option })),
+                error: null
+            };
+        }
+
+        function renderPaperLibrary() {
+            if (!paperLibrary) return;
+            if (!loadedTestPapers.length) {
+                paperLibrary.innerHTML = '<p class="msg">No saved papers yet. Build one on the left.</p>';
+                return;
+            }
+
+            paperLibrary.innerHTML = loadedTestPapers.map((paper) => `
+                <article class="glass-container paper-card">
+                    <span class="pill read">${escapeHtml(paper.subject)}</span>
+                    <h4>${escapeHtml(paper.title)}</h4>
+                    <p class="msg">${paper.question_count} questions · ${paper.duration_minutes} min</p>
+                </article>
+            `).join('');
+        }
+
+        function populatePaperSelect() {
+            if (!testPaperSelect) return;
+            testPaperSelect.innerHTML = '<option value="">Select saved paper...</option>';
+            loadedTestPapers.forEach((paper) => {
+                const option = document.createElement('option');
+                option.value = String(paper.id);
+                option.textContent = `${paper.title} | ${paper.subject} | ${paper.question_count} Q`;
+                testPaperSelect.appendChild(option);
+            });
+            renderPaperLibrary();
+        }
+
+        async function loadTestPapers() {
+            const res = await fetch('/api/tests/papers');
+            const payload = await res.json();
+            loadedTestPapers = Array.isArray(payload?.papers) ? payload.papers : [];
+            populatePaperSelect();
+        }
+
+        function populateLaunchSelect() {
+            if (!resultsLaunchSelect) return;
+            const previous = resultsLaunchSelect.value;
+            resultsLaunchSelect.innerHTML = '<option value="">Select a launched test...</option>';
+            loadedLaunches.forEach((launch) => {
+                const option = document.createElement('option');
+                option.value = String(launch.id);
+                option.textContent = `${launch.title} | ${launch.batch_name} | ${launch.status} | ${launch.submission_count} submissions`;
+                resultsLaunchSelect.appendChild(option);
+            });
+            if (previous && loadedLaunches.some((launch) => String(launch.id) === previous)) {
+                resultsLaunchSelect.value = previous;
+            }
+        }
+
+        async function loadTestLaunches() {
+            const res = await fetch('/api/tests/launches');
+            const payload = await res.json();
+            loadedLaunches = Array.isArray(payload?.launches) ? payload.launches : [];
+            populateLaunchSelect();
+            if (resultsLaunchSelect && !resultsLaunchSelect.value && loadedLaunches.length) {
+                resultsLaunchSelect.value = String(loadedLaunches[0].id);
+            }
+        }
+
+        async function loadSelectedLaunchInsights(launchId) {
+            if (!launchId) {
+                testSubmissionList.innerHTML = '<tr><td colspan="5" class="msg">Select a launched test to load submissions.</td></tr>';
+                teacherScoreboardList.innerHTML = '<p class="msg">Leaderboard preview will appear here.</p>';
+                publishScoreboardToggle.checked = false;
+                scoreboardToggleLabel.textContent = 'Students cannot see the rank table yet.';
+                return;
+            }
+
+            const launch = loadedLaunches.find((item) => String(item.id) === String(launchId));
+            publishScoreboardToggle.checked = Number(launch?.scoreboard_published || 0) === 1;
+            scoreboardToggleLabel.textContent = publishScoreboardToggle.checked
+                ? 'Students can see the rank table now.'
+                : 'Students cannot see the rank table yet.';
+
+            const [submissionsRes, scoreboardRes] = await Promise.all([
+                fetch(`/api/tests/submissions?launch_id=${encodeURIComponent(launchId)}`),
+                fetch(`/api/tests/launches/${encodeURIComponent(launchId)}/scoreboard`)
+            ]);
+            const submissionsPayload = await submissionsRes.json();
+            const scoreboardPayload = await scoreboardRes.json();
+            const submissions = Array.isArray(submissionsPayload?.submissions) ? submissionsPayload.submissions : [];
+            const scoreboard = Array.isArray(scoreboardPayload?.scoreboard) ? scoreboardPayload.scoreboard : [];
+
+            testSubmissionList.innerHTML = submissions.length ? submissions.map((submission) => `
+                <tr class="glow-on-hover">
+                    <td>${escapeHtml(submission.student_name)}</td>
+                    <td class="mono">${escapeHtml(submission.student_uid)}</td>
+                    <td>${escapeHtml(submission.batch_name)}</td>
+                    <td>${submission.score}/${submission.total_questions}</td>
+                    <td>${new Date(submission.submitted_at).toLocaleString()}</td>
+                </tr>
+            `).join('') : '<tr><td colspan="5" class="msg">No submissions yet for this test.</td></tr>';
+
+            teacherScoreboardList.innerHTML = scoreboard.length ? scoreboard.slice(0, 10).map((row) => `
+                <div class="item-card glass-container scoreboard-card">
+                    <div class="score-rank">${medalForRank(row.rank)}</div>
+                    <div class="i-info">
+                        <h4>${escapeHtml(row.student_name)}</h4>
+                        <p>${escapeHtml(row.batch_name)}</p>
+                    </div>
+                    <div class="score-points">${row.score}/${row.total_questions}</div>
+                </div>
+            `).join('') : '<p class="msg">No leaderboard data yet for this test.</p>';
+
+            setResultsStatus(
+                launch
+                    ? `${launch.title} for ${launch.batch_name} is ${launch.status}.`
+                    : 'Launch details loaded.'
+            );
+        }
+
+        async function loadTestHub() {
+            try {
+                await Promise.all([loadTestPapers(), loadTestLaunches()]);
+                if (!questionBuilder?.children.length) {
+                    addQuestionCard();
+                }
+                if (resultsLaunchSelect?.value) {
+                    await loadSelectedLaunchInsights(resultsLaunchSelect.value);
+                }
+            } catch (error) {
+                console.error('Failed to load test hub', error);
+                setPaperStatus('Could not load the paper library right now.', true);
+                setLaunchStatus('Could not load launches right now.', true);
+            }
+        }
+
+        document.querySelectorAll('[data-add-question="1"]').forEach((button) => {
+            button.addEventListener('click', () => addQuestionCard());
+        });
+
+        document.getElementById('test-paper-form')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const collected = collectQuestions();
+            if (collected.error) {
+                setPaperStatus(collected.error, true);
+                return;
+            }
+            const payload = {
+                title: document.getElementById('test-title').value.trim(),
+                subject: document.getElementById('test-subject').value.trim(),
+                duration_minutes: Number(document.getElementById('test-duration').value) || 30,
+                questions: collected.questions
+            };
+
+            if (!payload.title || !payload.subject || !payload.questions.length) {
+                setPaperStatus('Add the title, subject, and at least one complete MCQ.', true);
+                return;
+            }
+
+            setPaperStatus('Saving paper...');
+            const res = await fetch('/api/tests/papers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok || data.status !== 'success') {
+                setPaperStatus(data.error || 'Could not save the paper.', true);
+                return;
+            }
+
+            event.target.reset();
+            questionBuilder.innerHTML = '';
+            questionCount = 0;
+            addQuestionCard();
+            await loadTestPapers();
+            setPaperStatus(`Saved ${data.paper?.title || 'test paper'} successfully.`);
+        });
+
+        document.getElementById('btn-launch-test')?.addEventListener('click', async () => {
+            const batchName = testBatchSelect?.value;
+            const paperId = Number(testPaperSelect?.value);
+            if (!batchName || !Number.isFinite(paperId)) {
+                setLaunchStatus('Choose both a batch and a saved paper.', true);
+                return;
+            }
+
+            setLaunchStatus('Launching test...');
+            const res = await fetch('/api/tests/launches', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ batch_name: batchName, paper_id: paperId })
+            });
+            const data = await res.json();
+            if (!res.ok || data.status !== 'success') {
+                setLaunchStatus(data.error || 'Could not launch the test.', true);
+                return;
+            }
+
+            await loadTestLaunches();
+            if (resultsLaunchSelect) {
+                resultsLaunchSelect.value = String(data.launch?.id || '');
+                if (resultsLaunchSelect.value) {
+                    await loadSelectedLaunchInsights(resultsLaunchSelect.value);
+                }
+            }
+            setLaunchStatus(`Test launched for ${batchName}.`);
+        });
+
+        resultsLaunchSelect?.addEventListener('change', async (event) => {
+            await loadSelectedLaunchInsights(event.target.value);
+        });
+
+        publishScoreboardToggle?.addEventListener('change', async () => {
+            const launchId = resultsLaunchSelect?.value;
+            if (!launchId) {
+                publishScoreboardToggle.checked = false;
+                return;
+            }
+            const published = publishScoreboardToggle.checked;
+            const res = await fetch(`/api/tests/launches/${encodeURIComponent(launchId)}/publish-scoreboard`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ published })
+            });
+            const data = await res.json();
+            if (!res.ok || data.status !== 'success') {
+                publishScoreboardToggle.checked = !published;
+                setResultsStatus(data.error || 'Could not update scoreboard visibility.', true);
+                return;
+            }
+            scoreboardToggleLabel.textContent = published
+                ? 'Students can see the rank table now.'
+                : 'Students cannot see the rank table yet.';
+            setResultsStatus(published ? 'Scoreboard published for students.' : 'Scoreboard hidden from students.');
+            await loadTestLaunches();
+        });
+
+        document.getElementById('btn-close-test')?.addEventListener('click', async () => {
+            const launchId = resultsLaunchSelect?.value;
+            if (!launchId) {
+                setResultsStatus('Choose a launched test first.', true);
+                return;
+            }
+            const res = await fetch(`/api/tests/launches/${encodeURIComponent(launchId)}/close`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok || data.status !== 'success') {
+                setResultsStatus(data.error || 'Could not close the selected test.', true);
+                return;
+            }
+            await loadTestLaunches();
+            await loadSelectedLaunchInsights(launchId);
+            setResultsStatus('Selected test closed successfully.');
+        });
+
+        document.getElementById('btn-refresh-tests')?.addEventListener('click', async () => {
+            await loadTestHub();
+            setResultsStatus('Test data refreshed.');
+        });
+
+        // Charts
+        const ctx = document.getElementById('live-chart').getContext('2d'); // Selects the drawing context for Chart.js.
+        liveChart = new Chart(ctx, { // Initializes the real-time demographics doughnut.
+            type: 'doughnut', // Sets the chart type to doughnut for proportional representation.
+            data: { datasets: [{ data: [0, 100], backgroundColor: ['#3b82f6', 'rgba(255,255,255,0.05)'], borderWidth: 0, cutout: '85%' }] }, // Defines initial data and institutional blue styling.
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } // Configures chart responsiveness and disables the legend.
+        });
+        function updateChart(present, total) { // Institutional bridge for real-time chart synchronization.
+            if (!liveChart) {
+                document.getElementById('stat-count').innerText = `${present}/${total}`;
+                return;
+            }
+            liveChart.data.datasets[0].data = [present, total - present]; // Recalculates present vs absent student proportions.
+            liveChart.update(); // Re-renders the chart with current demographics.
+            document.getElementById('stat-count').innerText = `${present}/${total}`; // Updates the numerical strength counter.
+        }
+
+        // Initialize Zen Pillars Navigation
+        const zenNav = new ZenPillars({
+            containerId: 'zen-pillars-nav',
+            sectionsContainerId: 'zen-sections',
+            tabs: [
+                { id: 'classroom', label: 'Classroom Control', icon: '🏫' },
+                { id: 'broadcast', label: 'Broadcast Info', icon: '📡' },
+                { id: 'attendance', label: 'Attendance Feed', icon: '📝' }
+            ],
+            activeTabId: 'classroom'
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hashTab = (window.location.hash || '').replace(/^#section-/, '').trim();
+            const allowedTabs = ['classroom', 'broadcast', 'attendance'];
+            const zenNav = new ZenPillars({
+                containerId: 'zen-pillars-nav',
+                sectionsContainerId: 'zen-sections',
+                tabs: [
+                    { id: 'classroom', label: 'Classroom Control', icon: 'Class' },
+                    { id: 'broadcast', label: 'Broadcast Info', icon: 'Notice' },
+                    { id: 'attendance', label: 'Attendance Feed', icon: 'Feed' }
+                ],
+                activeTabId: allowedTabs.includes(hashTab) ? hashTab : 'classroom',
+                onTabChange: (tabId) => {
+                    history.replaceState(null, '', `#section-${tabId}`);
+                }
+            });
+            if (allowedTabs.includes(hashTab)) {
+                zenNav.setActive(hashTab);
+            }
+        });
+    </script>
+    <style>
+        .session-badge { background: rgba(255,255,255,0.05); padding: 8px 20px; border-radius: 20px; font-weight: 800; font-size: 0.75rem; color: var(--text-secondary); border: 1px solid var(--glass-border); } /* Styling for the session state tag. */
+        .session-badge.active { color: var(--accent-blue); animation: pulse 2s infinite; } /* Animated style for active sessions. */
+        .control-grid { display: grid; grid-template-columns: 1fr 1.2fr auto; gap: 16px; padding: 24px; align-items: flex-end; } /* Layout for the session control module. */
+        .control-grid > * { min-width: 0; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; } /* Action button spacing. */
+        .btn-group button { white-space: nowrap; }
+        .dashboard-split { display: grid; grid-template-columns: 1.35fr 1fr; gap: 20px; } /* Main dashboard dual-pane architecture. */
+        .chart-container-large { height: 260px; margin: 30px 0; } /* Constraint for the visualization engine. */
+        button.danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.2); } /* Danger button styling for termination actions. */
+        button.danger:hover { background: rgba(239, 68, 68, 0.1); } /* Danger interactive state. */
+        .notice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 20px 30px 30px; }
+        .notice-msg { grid-column: 1 / -1; }
+        .status-inline { align-self: center; font-size: 0.85rem; color: var(--text-secondary); }
+        #zen-pillars-nav .zen-pillars-wrapper { position: static; top: auto; padding: 8px 0 12px; margin-bottom: 14px; }
+        .batch-summary { margin: 0 40px 24px; padding: 14px; border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; background: rgba(10,16,34,0.35); }
+        .batch-summary-item { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: rgba(15,23,42,0.45); display: flex; flex-direction: column; gap: 5px; }
+        .sum-label { color: rgba(255,255,255,0.66); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.7px; }
+        .question-builder { display: grid; gap: 16px; grid-column: 1 / -1; }
+        .question-builder-actions { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .question-card { padding: 18px; }
+        .question-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+        .question-index-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(59,130,246,0.28); background: rgba(59,130,246,0.12); color: #dbeafe; font-weight: 800; font-size: 0.8rem; letter-spacing: 0.4px; }
+        .question-index-pill .question-number { color: #fff; font-size: 0.9rem; min-width: 1.2ch; text-align: center; }
+        .question-options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .option-input-label { display: flex; align-items: center; gap: 8px; }
+        .option-chip { width: 24px; height: 24px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 900; color: #fff; background: rgba(59,130,246,0.7); border: 1px solid rgba(147,197,253,0.5); }
+        .correct-option-row { display: flex; flex-wrap: wrap; gap: 10px; }
+        .correct-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.12); background: rgba(15,23,42,0.4); color: #fff; font-weight: 700; }
+        .results-shell { display: grid; grid-template-columns: 1.3fr 0.9fr; gap: 20px; align-items: start; }
+        .paper-card { padding: 16px; display: grid; gap: 10px; }
+        .compact-grid { display: grid; gap: 14px; }
+        .scoreboard-shell h3 { margin-bottom: 12px; }
+        .scoreboard-stack { display: grid; gap: 12px; }
+        .scoreboard-card { align-items: center; }
+        .score-rank { width: 56px; font-size: 1.15rem; font-weight: 900; text-align: center; }
+        .score-points { font-size: 1rem; font-weight: 900; color: #fff; }
+        .uid-tag { font-family: monospace; color: #93c5fd; font-weight: 800; }
+        .name-bold { color: #fff; font-weight: 700; }
+        .msg { color: var(--text-secondary); text-align: center; padding: 16px 10px; }
+        .status-pulse { display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 800; }
+        .status-pulse::before { content: ''; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; background: currentColor; }
+        .status-pulse.active { color: #22c55e; }
+        .status-pulse.warning { color: #f59e0b; }
+        .status-pulse.idle { color: var(--text-secondary); }
+        .toggle-row { display: flex; align-items: center; gap: 14px; min-height: 48px; }
+        .toggle-wrap { position: relative; display: inline-flex; width: 56px; height: 32px; }
+        .toggle-wrap input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; inset: 0; border-radius: 999px; background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.16); transition: 0.2s ease; }
+        .toggle-slider::before { content: ''; position: absolute; width: 24px; height: 24px; left: 3px; top: 3px; border-radius: 50%; background: #fff; transition: 0.2s ease; }
+        .toggle-wrap input:checked + .toggle-slider { background: rgba(59,130,246,0.42); border-color: rgba(59,130,246,0.36); }
+        .toggle-wrap input:checked + .toggle-slider::before { transform: translateX(24px); }
+        @media (max-width: 1480px) {
+            .control-grid { grid-template-columns: 1fr 1fr; }
+            .btn-group { grid-column: 1 / -1; justify-content: flex-start; }
+        }
+        @media (max-width: 1380px) {
+            .control-grid { grid-template-columns: 1fr; }
+            .dashboard-split { grid-template-columns: 1fr; }
+            .results-shell { grid-template-columns: 1fr; }
+            .btn-group { justify-content: flex-start; }
+        }
+        @media (max-width: 980px) {
+            .main-content { padding: 16px; }
+            #zen-pillars-nav .zen-pillars-scroll-outer { overflow-x: auto; }
+            #zen-pillars-nav .zen-pillars-list { margin: 0; padding: 0; gap: 8px; }
+            #zen-pillars-nav .zen-pill { min-height: 44px; padding: 10px 14px; font-size: 0.86rem; transform: none !important; }
+            #zen-pillars-nav .zen-pill .pill-icon { display: none; }
+            .control-grid { grid-template-columns: 1fr; gap: 14px; padding: 16px; }
+            .batch-summary { margin: 0 16px 16px; grid-template-columns: 1fr 1fr; }
+            .btn-group { flex-direction: column; gap: 10px; }
+            .btn-group button { width: 100%; }
+            .notice-grid { grid-template-columns: 1fr; padding: 16px; }
+            .dashboard-split { grid-template-columns: 1fr; gap: 16px; }
+            .question-options-grid { grid-template-columns: 1fr; }
+            .question-builder-actions { flex-direction: column; align-items: stretch; }
+            .question-builder-actions .btn-glass { width: 100%; }
+            .section-header { padding: 16px; }
+            .table-wrapper { width: 100%; overflow: auto; }
+            .table-wrapper table { min-width: 560px; }
+            .chart-container-large { height: 220px; margin: 20px 0; }
+            .h-actions { width: 100%; display: flex; gap: 10px; flex-wrap: wrap; }
+        }
+        @media (max-width: 640px) {
+            .main-content { padding: 12px 10px 28px; }
+            #zen-pillars-nav .zen-pillars-scroll-outer { overflow: visible; padding: 0; }
+            #zen-pillars-nav .zen-pillars-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+            #zen-pillars-nav .zen-pill { width: 100%; justify-content: center; border-radius: 12px; font-size: 0.8rem; padding: 10px 6px; box-shadow: none; }
+            .content-header { gap: 12px; margin-bottom: 12px; }
+            .content-header .h-info p { max-width: none; }
+            .control-grid,
+            .notice-grid {
+                padding: 14px !important;
+            }
+            .session-controls {
+                border-radius: 18px;
+            }
+            .batch-summary {
+                grid-template-columns: 1fr;
+                margin: 0 14px 14px;
+                gap: 10px;
+            }
+            .batch-summary-item {
+                padding: 12px;
+            }
+            .dashboard-split,
+            .results-shell {
+                gap: 14px;
+            }
+            .question-card {
+                padding: 14px;
+            }
+            .question-card-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .question-options-grid {
+                gap: 12px;
+            }
+            .correct-option-row {
+                width: 100%;
+            }
+            .correct-pill {
+                flex: 1 1 calc(50% - 10px);
+                justify-content: center;
+            }
+            .toggle-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .scoreboard-shell {
+                margin-top: 4px;
+            }
+            .paper-card,
+            .compact-grid {
+                gap: 12px;
+            }
+            .section-header {
+                padding: 14px;
+            }
+            .section-header .btn-group {
+                width: 100%;
+            }
+            .section-header .btn-group > * {
+                flex: 1 1 0;
+            }
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } } /* Global pulse animation for active states. */
+    </style>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<% if (isFront) { %>
+    <!-- FRONT SIDE: HIGH-FIDELITY IDENTITY FACE -->
+    <div class="id-card-pro custom-rmc-id">
+        <div class="id-watermark">RMC</div>
+        <div class="rmc-id-topbar">
+            <div class="rmc-id-logo-area">
+                <div class="rmc-logomark">
+                    <strong>RMC</strong>
+                    <span>INSTITUTE</span>
+                </div>
+            </div>
+            <div class="rmc-id-type">
+                <div class="type-main">IDENTITY<br>CARD</div>
+                <div class="type-year">2025-26</div>
+            </div>
+        </div>
+        <div class="rmc-id-concept">
+            <div class="concept-main">RMC</div>
+            <div class="concept-sub">Concept Se Selection tak</div>
+        </div>
+        <div class="rmc-id-batch"><%= s.current_batch || 'GENERAL BATCH' %></div>
+        <div class="rmc-id-middle-grid">
+            <div class="middle-item qr-zone">
+                <img src="<%= s.qr_path || '' %>" alt="QR Code" onerror="this.style.display='none'">
+            </div>
+            <div class="middle-item photo-zone">
+                <img src="<%= s.photo_path || '/images/default_avatar.png' %>" alt="Student Photo" onerror="this.src='/images/default_avatar.png'">
+            </div>
+        </div>
+        <div class="rmc-id-details">
+            <div class="detail-name"><%= (s.name || 'Student').toUpperCase() %></div>
+            <div class="detail-uid"><%= s.student_uid || 'UID-N/A' %></div>
+            <div class="detail-secondary-row">
+                <span>FNO: <%= s.phone || 'N/A' %></span>
+                <span>FBC: <%= s.fbc_no || 'N/A' %></span>
+            </div>
+            <div class="detail-parent">Father's Name: <%= s.father_name || 'N/A' %></div>
+            <div class="detail-address">Address on file (RMC digital vault)</div>
+        </div>
+        <div class="rmc-id-footer rmc-id-footer-link">Show Details -></div>
+    </div>
+<% } else { %>
+    <!-- BACK SIDE: ADMINISTRATIVE & SECURITY FACE -->
+    <div class="id-card-pro">
+        <div class="id-watermark">RMC</div>
+        <div class="id-brand-banner">
+            <div class="id-brand-title">Official Records</div>
+            <div class="id-brand-tagline">RMC Internal Sheet</div>
+        </div>
+        <div class="id-field-list id-back-fields">
+            <div class="id-field id-field-full">
+                <label>Father's Name</label>
+                <span class="id-value-strong"><%= s.father_name || '-' %></span>
+            </div>
+            <div class="id-field id-field-inline">
+                <label>Guardian Phone</label>
+                <span><%= s.guardian_phone || '-' %></span>
+            </div>
+            <div class="id-field id-field-inline">
+                <label>FBC Number</label>
+                <span><%= s.fbc_no || '-' %></span>
+            </div>
+            <div class="id-field id-field-full">
+                <label>Current Batch</label>
+                <span class="id-value-strong"><%= s.current_batch || 'N/A' %></span>
+            </div>
+            <div class="id-field id-field-full">
+                <label>Security Note</label>
+                <span class="id-value-compact">This card is property of RMC. Return to institute if found. Unauthorized use is prohibited. Residential address verified in digital vault.</span>
+            </div>
+        </div>
+        <div class="id-footer-strip">
+            <span>riteshmathematics.in</span>
+            <div class="id-footer-tag">Verified Access</div>
+        </div>
+    </div>
+<% } %>

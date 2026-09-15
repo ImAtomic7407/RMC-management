@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMC | Doubt Portal</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/id-card.css">
+</head>
+<body class="dashboard-layout">
+    <div class="vibrant-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+        <div class="blob blob-5"></div>
+    </div>
+
+    <%- include('partials/sidebar', { user, activePage: 'doubts' }) %>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div class="h-info">
+                <h1>Doubt Portal</h1>
+                <p>Review pending student doubts, inspect images, and mark them solved or flagged.</p>
+            </div>
+            <div class="h-actions">
+                <button class="btn-glass" onclick="refreshDoubts()">Refresh</button>
+                <a href="/dashboard_teacher" class="btn-neon" style="text-decoration:none;">Teacher Console</a>
+            </div>
+        </header>
+
+        <section class="dashboard-split" style="grid-template-columns: 340px 1fr; gap: 24px;">
+            <aside class="glass-container" style="padding: 24px;">
+                <div class="section-header">
+                    <h2>Pending Doubts</h2>
+                    <span class="status-inline" id="pending-count">0 pending</span>
+                </div>
+                <div id="pending-list" class="item-grid compact-grid" style="gap: 12px;">
+                    <p class="msg">Loading doubts...</p>
+                </div>
+            </aside>
+
+            <section class="glass-container" style="padding: 24px; min-height: 70vh;">
+                <div id="no-selection" class="empty-state" style="min-height: 50vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                    <div style="font-size: 3rem; opacity: 0.2; margin-bottom: 12px; line-height: 1;">◎</div>
+                    <p>Select a doubt from the list to review it here.</p>
+                </div>
+
+                <div id="detail-area" class="hidden" style="display:none; flex-direction: column; gap: 18px;">
+                    <div class="section-header" style="align-items: flex-start;">
+                        <div>
+                            <h2 id="detail-name">Student</h2>
+                            <p id="detail-meta" style="color: var(--text-secondary); margin-top: 4px;">UID</p>
+                        </div>
+                        <div id="detail-badge" class="doubt-badge pending">Pending</div>
+                    </div>
+
+                    <div class="glass-card">
+                        <p id="detail-question" style="font-size: 1.05rem; line-height: 1.6; color: #0f172a;">Question text goes here.</p>
+                    </div>
+
+                    <div id="detail-image-wrap" class="hidden" style="display:none;">
+                        <img id="detail-image" class="doubt-image" src="" alt="Doubt image">
+                    </div>
+
+                    <div class="glass-card" style="border: 1px solid rgba(59,130,246,0.18); background: rgba(59,130,246,0.05);">
+                        <div class="section-header" style="margin-bottom: 12px;">
+                            <h3 style="font-size: 1rem;">Solution Photo</h3>
+                            <span class="status-inline" id="reply-camera-status">Optional, take a solution photo before solving.</span>
+                        </div>
+                        <div class="camera-shell">
+                            <video id="reply-video" class="camera-video hidden" playsinline autoplay muted></video>
+                            <canvas id="reply-canvas" class="hidden"></canvas>
+                            <div id="reply-preview" class="empty-state" style="min-height: 180px; display:flex; align-items:center; justify-content:center;">No solution photo captured yet.</div>
+                        </div>
+                        <div class="btn-group" style="margin-top: 12px;">
+                            <button id="btn-open-reply-camera" class="btn-glass" type="button">Take Solution Photo</button>
+                            <button id="btn-capture-reply-photo" class="btn-neon" type="button">Capture</button>
+                            <button id="btn-retake-reply-photo" class="btn-glass" type="button">Retake</button>
+                            <label class="btn-glass" style="display:inline-flex; align-items:center; cursor:pointer;">
+                                Upload Image
+                                <input id="reply-image-input" type="file" accept="image/*" capture="environment" hidden>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="profile-grid" style="grid-template-columns: repeat(2, 1fr);">
+                        <div class="profile-detail"><label>Batch</label><span id="detail-batch">-</span></div>
+                        <div class="profile-detail"><label>Phone</label><span id="detail-phone">-</span></div>
+                        <div class="profile-detail"><label>Asked On</label><span id="detail-created">-</span></div>
+                        <div class="profile-detail"><label>Reply Status</label><span id="detail-status">-</span></div>
+                    </div>
+
+                    <div class="btn-group" style="margin-top: 8px;">
+                        <button class="btn-glass danger" onclick="updateDoubt('flagged')">See Again</button>
+                        <button class="btn-neon" onclick="updateDoubt('solved')">Mark Solved</button>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        window.__RMC_DOUBT_PORTAL = {
+            username: <%- JSON.stringify(user.username || '') %>
+        };
+    </script>
+    <script src="/js/doubt_portal.js"></script>
+
+    <style>
+        .hidden { display: none !important; }
+        .doubt-image { width: 100%; border-radius: 16px; border: 1px solid var(--glass-border); }
+        .doubt-card { padding: 14px; border-radius: 16px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
+        .doubt-card:hover { transform: translateY(-2px); border-color: rgba(59,130,246,0.35); }
+        .doubt-card.active { border-color: rgba(59,130,246,0.6); background: rgba(59,130,246,0.08); }
+        .doubt-card h4 { margin: 0 0 6px; color: #0f172a; }
+        .doubt-card .meta { color: var(--text-secondary); font-size: 0.8rem; display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .doubt-card p { color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; }
+        .doubt-badge { display: inline-flex; padding: 4px 10px; border-radius: 999px; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.7px; text-transform: uppercase; }
+        .doubt-badge.pending { color: #fbbf24; background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.18); }
+        .doubt-badge.solved { color: #4ade80; background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.18); }
+        .doubt-badge.flagged { color: #f87171; background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.18); }
+        .profile-grid { display: grid; gap: 12px; }
+        .profile-detail { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.02); }
+        .profile-detail label { display: block; color: var(--text-secondary); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+        .profile-detail span { color: #0f172a; font-size: 0.95rem; font-weight: 600; }
+        .camera-shell { display: grid; gap: 12px; }
+        .camera-video { width: 100%; border-radius: 16px; border: 1px solid var(--glass-border); background: #020617; min-height: 220px; object-fit: cover; }
+        @media (max-width: 1024px) { .dashboard-split { grid-template-columns: 1fr !important; } }
+    </style>
+</body>
+</html>

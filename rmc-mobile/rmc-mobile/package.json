@@ -1,0 +1,46 @@
+{
+  "name": "rmc-mobile",
+  "version": "1.0.17",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "ios": "expo run:ios",
+    "build:preview": "eas build --platform android --profile preview",
+    "build:production": "eas build --platform android --profile production",
+    "build:apk": "eas build --platform android --profile production-apk",
+    "publish:staff-ota": "node scripts/publish-staff-ota.mjs"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "8.4.4",
+    "expo": "^54.0.0",
+    "expo-camera": "~17.0.10",
+    "expo-document-picker": "~14.0.8",
+    "expo-file-system": "~19.0.21",
+    "expo-image-picker": "~17.0.10",
+    "expo-linking": "~8.0.11",
+    "expo-notifications": "~0.32.16",
+    "expo-print": "~15.0.8",
+    "expo-screen-capture": "~8.0.9",
+    "expo-secure-store": "~15.0.8",
+    "expo-sharing": "~14.0.8",
+    "expo-sqlite": "~16.0.10",
+    "expo-status-bar": "~3.0.9",
+    "expo-updates": "~29.0.17",
+    "qrcode": "^1.5.4",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-blob-util": "^0.24.7",
+    "react-native-pdf": "^7.0.4",
+    "react-native-webview": "^13.16.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.10",
+    "typescript": "~5.9.2"
+  }
+}

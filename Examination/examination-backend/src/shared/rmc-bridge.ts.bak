@@ -1,0 +1,152 @@
+/**
+ * rmc-bridge.ts
+ * Server-to-server HTTP client for calling the RMC internal exam API.
+ * All calls attach the shared secret header.
+ * These functions throw on unexpected errors; callers handle 404/401 as logic branches.
+ */
+
+import { env } from "../config/env";
+import { log } from "./logger";
+
+export type RmcStaffUser = {
+  source_uid: string;
+  username: string;
+  full_name: string;
+  phone: string | null;
+  rmc_role: "teacher" | "staff" | "host";
+  active: boolean;
+};
+
+export type RmcStudentUser = {
+  source_uid: string;
+  student_uid: string;
+  full_name: string;
+  phone: string | null;
+  rmc_role: "student";
+  batches: string[];
+  primary_batch: string | null;
+  active: boolean;
+  photo_url: string | null;  // web-relative path, e.g. /uploads/photo.jpg — served by RMC
+};
+
+export type RmcVerifyResult =
+  | { ok: true; user: RmcStaffUser | RmcStudentUser }
+  | { ok: false; status: number; error: string };
+
+function rmcHeaders(): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    "x-exam-secret": env.RMC_INTERNAL_SECRET,
+  };
+}
+
+function rmcUrl(path: string): string {
+  const base = env.RMC_API_URL.replace(/\/$/, "");
+  return `${base}${path}`;
+}
+
+/** Ping RMC — returns true if alive */
+export async function pingRmc(): Promise<boolean> {
+  if (!env.RMC_API_URL || !env.RMC_INTERNAL_SECRET) return false;
+  try {
+    const res = await fetch(rmcUrl("/api/internal/exam/healthz"), {
+      method: "GET",
+      headers: rmcHeaders(),
+      signal: AbortSignal.timeout(5000),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** Verify a staff/teacher user credential against RMC */
+export async function verifyRmcStaff(
+  username: string,
+  password: string,
+): Promise<RmcVerifyResult> {
+  if (!env.RMC_API_URL || !env.RMC_INTERNAL_SECRET) {
+    return { ok: false, status: 503, error: "RMC bridge not configured." };
+  }
+  try {
+    const res = await fetch(rmcUrl("/api/internal/exam/verify-staff"), {
+      method: "POST",
+      headers: rmcHeaders(),
+      body: JSON.stringify({ username, password }),
+      signal: AbortSignal.timeout(8000),
+    });
+    const body = (await res.json()) as Record<string, unknown>;
+    if (!res.ok) {
+      return {
+        ok: false,
+        status: res.status,
+        error: String(body.error ?? "RMC verification failed."),
+      };
+    }
+    return { ok: true, user: body.user as RmcStaffUser };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    log.system.error("RMC bridge verifyRmcStaff failed", { error: msg });
+    return { ok: false, status: 502, error: "RMC server unreachable." };
+  }
+}
+
+/** Verify a student by UID — no password needed (RMC student login uses uid+trio-lock) */
+export async function verifyRmcStudent(
+  uid: string,
+): Promise<RmcVerifyResult> {
+  if (!env.RMC_API_URL || !env.RMC_INTERNAL_SECRET) {
+    return { ok: false, status: 503, error: "RMC bridge not configured." };
+  }
+  try {
+    const res = await fetch(rmcUrl("/api/internal/exam/verify-student"), {
+      method: "POST",
+      headers: rmcHeaders(),
+      body: JSON.stringify({ uid }),
+      signal: AbortSignal.timeout(4000),
+    });
+    const body = (await res.json()) as Record<string, unknown>;
+    if (!res.ok) {
+      return {
+        ok: false,
+        status: res.status,
+        error: String(body.error ?? "Student not found in RMC."),
+      };
+    }
+    return { ok: true, user: body.user as RmcStudentUser };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    log.system.error("RMC bridge verifyRmcStudent failed", { error: msg });
+    return { ok: false, status: 502, error: "RMC server unreachable." };
+  }
+}
+
+/** Fetch full student roster from RMC for bulk sync */
+export async function fetchRmcStudentRoster(): Promise<RmcStudentUser[]> {
+  const res = await fetch(rmcUrl("/api/internal/exam/roster"), {
+    method: "GET",
+    headers: rmcHeaders(),
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    throw new Error(`RMC roster fetch failed: ${res.status} ${String(body.error ?? "")}`);
+  }
+  const body = (await res.json()) as { students: RmcStudentUser[] };
+  return body.students ?? [];
+}
+
+/** Fetch full staff/teacher roster from RMC for bulk sync */
+export async function fetchRmcStaffRoster(): Promise<RmcStaffUser[]> {
+  const res = await fetch(rmcUrl("/api/internal/exam/staff-roster"), {
+    method: "GET",
+    headers: rmcHeaders(),
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    throw new Error(`RMC staff roster fetch failed: ${res.status} ${String(body.error ?? "")}`);
+  }
+  const body = (await res.json()) as { staff: RmcStaffUser[] };
+  return body.staff ?? [];
+}

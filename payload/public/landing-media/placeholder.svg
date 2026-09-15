@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="0.6" stop-color="#111c34"/>
+      <stop offset="1" stop-color="#071021"/>
+    </linearGradient>
+    <radialGradient id="r" cx="35%" cy="30%" r="70%">
+      <stop offset="0" stop-color="#3b82f6" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="r2" cx="75%" cy="65%" r="70%">
+      <stop offset="0" stop-color="#06b6d4" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#06b6d4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#g)"/>
+  <rect width="1200" height="800" fill="url(#r)"/>
+  <rect width="1200" height="800" fill="url(#r2)"/>
+  <g fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="2">
+    <rect x="60" y="60" width="1080" height="680" rx="28"/>
+  </g>
+  <g fill="rgba(255,255,255,0.86)">
+    <text x="90" y="150" font-family="system-ui, -apple-system, Segoe UI, Arial" font-size="42" font-weight="700">
+      Replace with your client media
+    </text>
+    <text x="90" y="210" font-family="system-ui, -apple-system, Segoe UI, Arial" font-size="22" fill="rgba(255,255,255,0.68)">
+      Put hero.jpg / hero.mp4 and gallery-1.jpg ... gallery-6.jpg in /public/landing-media
+    </text>
+  </g>
+  <g fill="rgba(255,255,255,0.18)">
+    <circle cx="1020" cy="180" r="90"/>
+    <circle cx="1045" cy="520" r="120"/>
+    <circle cx="260" cy="560" r="140"/>
+  </g>
+</svg>
+

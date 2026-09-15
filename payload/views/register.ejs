@@ -1,0 +1,202 @@
+<!DOCTYPE html> <!-- Standard declaration for HTML5 institutional compliance. -->
+<html lang="en"> <!-- Sets the language of the professional enrollment portal. -->
+<head>
+    <meta charset="UTF-8"> <!-- Security encoding for multi-regional name inputs. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Mobile viewport scaling for field enrollment tablets. -->
+    <title><%= portalMode === 'update' ? 'RMC Academy | Updating Portal' : 'RMC Academy | Institutional AI Enrollment' %></title> <!-- Tab title for the active session. -->
+    <link rel="stylesheet" href="/css/index.css"> <!-- Links the master design tokens. -->
+    <link rel="stylesheet" href="/css/register.css?v=20260408f"> <!-- Links the specialized form and camera UI CSS. -->
+    <link rel="stylesheet" href="/css/id-card.css?v=20260408f"> <!-- Links the 3D flippable card physics and renders. -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script> <!-- Library for offline high-fidelity PNG output. -->
+    <script>
+        window.__RMC_PORTAL_CONFIG = {
+            mode: <%- JSON.stringify(portalMode || 'create').replace(/</g, '\\u003c') %>,
+            message: <%- JSON.stringify(portalMessage || '').replace(/</g, '\\u003c') %>,
+            editSessionId: <%- JSON.stringify(editSessionId || '').replace(/</g, '\\u003c') %>,
+            student: <%- JSON.stringify(editStudent || null).replace(/</g, '\\u003c') %>
+        };
+    </script>
+</head>
+<body class="dark-theme" data-portal-mode="<%= portalMode || 'create' %>"> <!-- Applies the dedicated institutional enrollment environment. -->
+    <div class="vibrant-bg"> <!-- Kinetic light engines for background atmosphere. -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+        <div class="blob blob-5"></div>
+    </div>
+    
+    <div class="shutter-flash" id="flash-effect"></div> <!-- The high-intensity white flash for capture feedback. -->
+
+    <div class="app-container">
+        <header class="app-header"> <!-- The institutional title zone. -->
+            <div class="brand-row">
+                <div class="logo-wrap">
+                    <div class="glitch-text">RMC<span><%= portalMode === 'update' ? 'UPDATE' : 'ENROLL' %></span></div>
+                    <p class="slogan">riteshmathematics.in | <%= portalMode === 'update' ? 'UPDATING PORTAL' : 'ENROLLMENT PORTAL' %></p>
+                </div>
+                <div class="nav-links">
+                    <a href="/staff_gateway" class="btn-ghost">BACK TO STAFF GATEWAY</a>
+                </div>
+            </div>
+            
+            <div class="header-divider">
+                <span class="registration-title"><%= portalMode === 'update' ? 'TEMPORARY STUDENT UPDATE PORTAL' : 'PROFESSIONAL ID GENERATOR' %></span>
+            </div>
+            <% if (portalMode === 'update') { %>
+                <p class="approval-hint" style="margin-top: 10px; color: #93c5fd;">
+                    This update session will expire if you reload this page.
+                </p>
+            <% } else if (portalMessage) { %>
+                <p class="approval-hint" style="margin-top: 10px; color: #fca5a5;">
+                    <%= portalMessage %>
+                </p>
+            <% } %>
+        </header>
+
+        <main class="main-grid"> <!-- Layout split: Camera (Left/Top) | Data (Right/Bottom) -->
+            
+            <!-- Camera System (Left Section on Desktop) -->
+            <section class="pro-camera-container">
+                <div class="glass-panel camera-panel">
+                    <div class="circle-scanner"> <!-- Specialized circular viewport for photos. -->
+                        <video id="webcam" autoplay playsinline class="mirror"></video>
+                        <img id="photo-preview" src="" class="hidden"> <!-- Clean hide until capture. -->
+                        <div id="moving-line" class="scan-line"></div>
+                        <div class="camera-ui-info">
+                            <div class="status-dot"></div>
+                            <span class="status-text">LIVE SENSOR ACTIVE</span>
+                        </div>
+                    </div>
+                    
+                    <div class="camera-actions">
+                        <button type="button" id="btn-snap" class="btn-action btn-glow">📸 CAPTURE PORTRAIT</button>
+                        <button type="button" id="btn-reset" class="btn-action btn-ghost hidden">🔄 RETAKE PHOTO</button>
+                    </div>
+                    <canvas id="photo-canvas" style="display:none;"></canvas>
+                </div>
+
+            </section>
+
+            <!-- Data Input (Right Section on Desktop) -->
+            <section class="registration-form-host">
+                <form id="reg-form" class="glass-panel pro-form">
+                    <div class="form-row">
+                        <div class="input-block">
+                            <label>FULL NAME</label>
+                            <input type="text" id="name" placeholder="Full name of student..." required>
+                        </div>
+                        <div class="input-block">
+                            <label>PHONE NUMBER (PRIMARY)</label>
+                            <input type="text" id="phone" placeholder="+91 XXXXX XXXXX" required>
+                            <small id="phone-approval-hint" class="approval-hint">
+                                Enter the phone number to check whether the ID already exists or needs teacher approval.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-block">
+                            <label>FATHER'S NAME</label>
+                            <input type="text" id="father_name" placeholder="Father's full name...">
+                        </div>
+                        <div class="input-block">
+                            <label>GUARDIAN PHONE</label>
+                            <input type="text" id="guardian_phone" placeholder="Emergency contact...">
+                        </div>
+                    </div>
+
+                    <div class="input-block">
+                        <label>RESIDENTIAL ADDRESS</label>
+                        <textarea id="address" placeholder="Complete postal address..." rows="2"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-block">
+                            <label>CLASS / COURSE</label>
+                            <select id="student_class" class="input-glass">
+                                <option value="" disabled selected>Select Class...</option>
+                                <option value="11th">11th</option>
+                                <option value="12th">12th</option>
+                                <option value="Dropper">Dropper</option>
+                            </select>
+                        </div>
+                        <div class="input-block">
+                            <label>BATCH ASSIGNMENT</label>
+                            <select id="current_batch" class="input-glass">
+                                <option value="" disabled selected>Select Target Batch...</option>
+                                <% if (Array.isArray(batches)) { %>
+                                    <% batches.forEach((batch) => { %>
+                                        <option value="<%= batch.name %>"><%= batch.name %></option>
+                                    <% }) %>
+                                <% } %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-block">
+                        <label>ASPIRATION GOAL</label>
+                        <div class="radio-cards">
+                            <label class="radio-card">
+                                <input type="radio" name="aspiration" value="JEE">
+                                <span>JEE</span>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="aspiration" value="NEET">
+                                <span>NEET</span>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="aspiration" value="NDA">
+                                <span>NDA</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-footer-ui">
+                        <input type="hidden" id="edit-session-id" value="<%= editSessionId || '' %>">
+                        <button type="submit" id="submit-all" class="btn-primary btn-sparkle"><%= portalMode === 'update' ? 'SAVE STUDENT UPDATE' : 'SEND ID CARD REQUEST' %></button>
+                    </div>
+                </form>
+            </section>
+
+        </main>
+
+        <!-- Result Card Reveal (Hidden by default) -->
+        <div id="inline-result-area" class="inline-preview hidden">
+            <div class="result-header">
+                <h3>ID CARD READY</h3>
+                <span class="status-badge"><%= portalMode === 'update' ? 'ID CARD UPDATED' : 'PHONE MATCH CONFIRMED' %></span>
+            </div>
+            
+            <div class="result-grid" style="display: flex; justify-content: center;">
+                <!-- Full Render (Center) -->
+                <div class="full-render-display" style="align-items: center; max-width: 500px;">
+                    <p class="render-label">FULL INSTITUTIONAL RENDER (PNG)</p>
+                    <div id="full-id-render-preview" class="render-viewport" style="min-height: auto; padding: 1.5rem;">
+                        <div class="generation-loader">
+                            <div class="pulse-ring"></div>
+                            <span>GENERATING HIGH-FIDELITY PNG...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="inline-actions">
+                <button id="btn-go-portal" class="btn-primary" style="background: var(--primary-accent);"><%= portalMode === 'update' ? '↩ RETURN TO HOST' : '🚀 ENTER STUDENT PORTAL' %></button>
+                <button id="btn-download-img" class="btn-sparkle download-btn">📥 DOWNLOAD FULL ID PNG</button>
+                <button id="btn-start-new" class="btn-ghost">START NEXT ENROLLMENT</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Hidden Buffer for Snapshot Capture -->
+    <div style="position: absolute; top: -9999px; left: -9999px;" aria-hidden="true">
+        <div id="id-card-render-buffer">
+            <div id="capture-front" class="capture-face"></div>
+        </div>
+    </div>
+
+    <script src="/js/register.js?v=20260409a"></script>
+</body>
+</html>

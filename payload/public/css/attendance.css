@@ -1,0 +1,116 @@
+:root { /* Global design tokens for the nocturnal institutional scanning environment. */
+    --bg: #030712; /* Defines the deep void background for the scanning environment (Midnight Blue). */
+    --panel: rgba(17, 24, 39, 0.7); /* Deep glass variant for administrative scanning panels (Semi-opaque). */
+    --panel-border: rgba(255, 255, 255, 0.08); /* Subtle highlight for glass container outlines (Rim-light). */
+    --primary: #3b82f6; /* Core institutional blue for verification feedback (Brand Blue). */
+    --primary-glow: rgba(59, 130, 246, 0.5); /* Emissive glow token for active scanners (Neon Blue). */
+    --accent: #22d3ee; /* Cyber-cyan highlight for QR focus indicators (Tech Cyan). */
+    --text: #f8fafc; /* High-contrast white for administrative readability (Off-white). */
+    --text-muted: #94a3b8; /* Slate gray for secondary metadata and hints (Steel Gray). */
+    --radius: 1.25rem; /* Standard institutional corner rounding for desktop/mobile consistency. */
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; } /* Universal reset and institutional typography across all devices. */
+body.dark-theme { /* Applies the nocturnal theme to the attendance marking portal. */
+    background: var(--bg); /* Applies the deep nocturnal environment background. */
+    color: var(--text); /* Sets the primary text color to high-contrast white. */
+    min-height: 100vh; /* Ensures the scanning environment fills the entire screen. */
+    padding: 1rem; /* standard viewport gutter for mobile safety. */
+    display: flex; /* Enables flexbox for centered scanning logic. */
+    justify-content: center; /* Horizontally centers the scanning terminal. */
+    align-items: flex-start; /* Aligns content to the top for comfortable mobile reach. */
+}
+.neon-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; } /* background aura host container (Fixed layer). */
+.neon-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; } /* Kinetic light engines creating background atmosphere. */
+.orb-1 { width: 40vw; height: 40vw; background: var(--primary); top: -10%; left: -10%; } /* Northern blue aura for top-left glow. */
+.orb-2 { width: 30vw; height: 30vw; background: var(--accent); bottom: -10%; right: -5%; } /* Southern cyan aura for bottom-right glow. */
+.app-container { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 1.5rem; } /* Global layout host for institutional apps. */
+.app-header { display: flex; justify-content: space-between; align-items: center; } /* Branding and navigation alignment for the attendance portal. */
+.glitch-text { font-size: 2.5rem; font-weight: 900; letter-spacing: -2px; color: var(--text); } /* Institutional display typography for primary branding. */
+.slogan { font-size: 0.65rem; color: var(--accent); letter-spacing: 4px; font-weight: 800; margin-top: -5px; } /* Institutional sub-branding for the scanning module. */
+.btn-nav { text-decoration: none; font-size: 0.7rem; font-weight: 900; color: #fff; border: 1px solid var(--panel-border); padding: 8px 15px; border-radius: 20px; transition: 0.3s; } /* Minimalist secondary navigation button. */
+.btn-nav:hover { background: var(--panel); border-color: var(--primary); } /* Navigation interactive state highlighting the target portal. */
+.glass-panel { /* High-fidelity glassmorphism container for administrative modules. */
+    background: var(--panel); /* Applies the semi-opaque glassmorphism base layer. */
+    -webkit-backdrop-filter: blur(20px); /* Hardware-accelerated background diffusion (Safari). */
+    backdrop-filter: blur(20px); /* Hardware-accelerated background diffusion for modern browsers. */
+    border: 1px solid var(--panel-border); /* Subtle perimeter rim-light border. */
+    border-radius: var(--radius); /* Applies standard institutional corner rounding. */
+    padding: 1.5rem; /* Internal breathing room for scanning tools. */
+}
+/* SCANNER UI */
+.scanner-section { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; text-align: center; } /* Scanning alignment host for centered camera focus. */
+.section-title { font-size: 0.8rem; font-weight: 900; color: #adb5bd; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; } /* Section header styling for scanner status. */
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse 1.5s infinite; } /* Live status indicator (Green) with kinetic heartbeat. */
+.scanner-wrapper { /* Master container for the live video feed and augmented reality overlays. */
+    width: 280px; /* Fixed scanning viewport width. */
+    height: 280px; /* Fixed scanning viewport height. */
+    background: #000; /* Absolute black backing for maximum student QR contrast. */
+    border-radius: 20px; /* Rounded corners for the digital viewfinder. */
+    overflow: hidden; /* Clips the camera stream and scan-line to the wrapper. */
+    position: relative; /* Anchor for augmented reality text and bracket overlays. */
+    border: 2px solid var(--primary); /* Primary verification boundary highlight (Blue). */
+    box-shadow: 0 0 30px var(--primary-glow); /* Outer emission aura indicating active camera polling. */
+}
+#qr-reader { width: 100% !important; height: 100% !important; border: none !important; position: relative; z-index: 1; } /* Camera stream host (Injected by html5-qrcode). */
+#qr-reader video { /* Direct styling for the raw browser video source. */
+    width: 100% !important; /* Forces the video to fill the scanner wrapper. */
+    height: 100% !important; /* Forces the video to fill the scanner wrapper. */
+    object-fit: cover !important; /* Forces uniform camera aspect ratio while filling the frame. */
+    position: absolute; /* Pins the video to the viewport origin. */
+    top: 0; /* Align to top. */
+    left: 0; /* Align to left. */
+}
+/* SCANNER FEEDBACK */
+.scanner-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 10; padding: 20px; } /* Augmented reality focus layer (View-only). */
+.scan-corner { position: absolute; width: 30px; height: 30px; border: 3px solid var(--accent); } /* High-contrast cyan focus brackets for guidance. */
+.top-left { top: 15px; left: 15px; border-right: none; border-bottom: none; } /* NW focus bracket (Upper Left). */
+.top-right { top: 15px; right: 15px; border-left: none; border-bottom: none; } /* NE focus bracket (Upper Right). */
+.bottom-left { bottom: 15px; left: 15px; border-right: none; border-top: none; } /* SW focus bracket (Lower Left). */
+.bottom-right { bottom: 15px; right: 15px; border-left: none; border-top: none; } /* SE focus bracket (Lower Right). */
+.scan-anim-line { position: absolute; left: 0; top: 0; width: 100%; height: 2px; background: var(--accent); box-shadow: 0 0 15px var(--accent); animation: scanLine 3s infinite linear; } /* Futuristic kinetic scan baseline (Cyan). */
+@keyframes scanLine { from { top: 0; } to { top: 100%; } } /* vertical scanning cycle (0% to 100% loop). */
+.scanner-hint { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); letter-spacing: 1px; } /* Staff guidance metadata for QR positioning. */
+/* INLINE PREVIEW STYLING */
+.inline-preview { /* container for verification results (3D Card). */
+    width: 100%; /* Pushes the preview to the full width of the pane. */
+    display: flex; /* alignment for results and actions. */
+    flex-direction: column; /* Vertical alignment for identity verification. */
+    align-items: center; /* Centers the 3D identity mockup. */
+    gap: 1.5rem; /* uniform spacing between data and buttons. */
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); /* Fluid entrance for verification results. */
+}
+@keyframes slideUp { /* entrance animation for verification outcomes. */
+    from { transform: translateY(40px); opacity: 0; } /* Start position: Offset and transparent. */
+    to { transform: translateY(0); opacity: 1; } /* End: Grounded and opaque. */
+}
+.result-header { text-align: center; } /* Branding and status container for the verification outcome. */
+.success-icon { font-size: 2rem; color: #22c55e; margin-bottom: 5px; } /* high-contrast affirmation indicator (Green). */
+.result-header h3 { font-size: 1.2rem; font-weight: 900; letter-spacing: 2px; color: var(--accent); } /* student identity confirmation label. */
+.status-badge { font-size: 0.6rem; background: rgba(34, 211, 238, 0.2); color: var(--accent); padding: 4px 10px; border-radius: 20px; font-weight: 900; margin-top: 5px; display: inline-block; } /* Temporal status tag (Blue highlight). */
+.card-display-box { /* Visual viewport for the student ID verification mockup. */
+    padding: 1rem; /* Internal buffer for the 3D card. */
+    background: rgba(255,255,255,0.03); /* subtle high-contrast background. */
+    border-radius: 12px; /* standard institutional rounding. */
+    border: 1px dashed rgba(255,255,255,0.1); /* Delineates the identity preview zone. */
+}
+.inline-actions { /* Action cluster for flippable ID interaction and reset. */
+    display: flex; /* Horizontal/Vertical flex host. */
+    flex-direction: column; /* Default vertical stack for mobile-first scanning. */
+    gap: 1rem; /* uniform spacing between actions. */
+    width: 100%; /* Spans the full width of the terminal pane. */
+    max-width: 320px; /* Constraints for professional data alignment. */
+}
+.btn-primary { /* high-vibrancy action button for clearing results. */
+    width: 100%; background: #fff; color: #000; border: none; padding: 1.1rem; border-radius: 10px; font-weight: 900; cursor: pointer; transition: 0.3s;
+    letter-spacing: 1px; /* tracked typography for primary administrative actions. */
+}
+.hidden { display: none !important; } /* Core utility for conditional UI rendering (Strict hide). */
+/* SHARED BRAND STYLES (Moved to id-card.css for professional 3D system) */
+@keyframes pulse { 0% { opacity: 0.6; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0.6; transform: scale(0.9); } } /* Temporal rhythm for status lights (Heartbeat). */
+/* ANDROID FOCUS */
+@media (max-width: 480px) { /* Optimizes the scanning terminal for mobile/tablet staff usage (Android/iOS). */
+    body { padding: 0.5rem; } /* Reduces viewport gutter on ultra-narrow screens. */
+    .glitch-text { font-size: 2rem; } /* Reduces branding scale for small viewports. */
+    .glass-panel { padding: 1rem; } /* Compact padding for small mobile devices. */
+    .scanner-wrapper { width: 100%; max-width: 300px; height: 300px; } /* Ensures full-screen camera feed on smaller mobile viewports. */
+}
